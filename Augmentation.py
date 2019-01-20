@@ -221,3 +221,6 @@ def generate(rawdata,strategy,num = None):
             method(data2train).to_csv(f'data2train{%strategy}{%num}.csv', encoding='utf-8', index=False)
             method(data3train).to_csv(f'data3train{%strategy}{%num}.csv', encoding='utf-8', index=False)
             method(data4train).to_csv(f'data4train{%strategy}{%num}.csv', encoding='utf-8', index=False)
+if __name__ == '__main':
+    rawdata = pd.read_csv('rawdata0sort.csv')
+    generate(rawdata,manykernalreplace,100000)
