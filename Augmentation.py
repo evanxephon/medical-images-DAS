@@ -178,17 +178,17 @@ def generate(rawdata,strategy,num = None):
     if strategy == '3X':
         if num:
             data4train = generate_3X_withnum(data4train,num,4)
-            data4train.to_csv(f'data4train{%num}.csv', encoding='utf-8', index=False)
+            data4train.to_csv(f'data4train{num}.csv', encoding='utf-8', index=False)
             # with open('data4train.pickle', 'wb') as f:
             #     pickle.dump(data4train, f, protocol=pickle.HIGHEST_PROTOCOL)
             data1train = generate_3X_withnum(data1train,num,1)
-            data1train.to_csv(f'data1train{%num}.csv',encoding='utf-8',index=False)
+            data1train.to_csv(f'data1train{num}.csv',encoding='utf-8',index=False)
             data3train = generate_3X_withnum(data3train,num,3)
-            data3train.to_csv(f'data3train{%num}.csv',encoding='utf-8',index=False)
+            data3train.to_csv(f'data3train{num}.csv',encoding='utf-8',index=False)
             data0train = generate_3X_withnum(data0train,num,0)
-            data0train.to_csv(f'data0train{%num}.csv',encoding='utf-8',index=False)
+            data0train.to_csv(f'data0train{num}.csv',encoding='utf-8',index=False)
             data2train = generate_3X_withnum(data2train,num,2)
-            data2train.to_csv(f'data2train{%num}.csv',encoding='utf-8',index=False)
+            data2train.to_csv(f'data2train{num}.csv',encoding='utf-8',index=False)
         else:
             generate_3X(data0train, 0).to_csv('data0train3X.csv',encoding='utf-8',index=False)
             generate_3X(data1train, 1).to_csv('data1train3X.csv', encoding='utf-8', index=False)
@@ -210,17 +210,17 @@ def generate(rawdata,strategy,num = None):
             method = generate_different_areas_replace
     if method:
         if num:
-            method(data0train,num).to_csv(f'data0train{%strategy}{%num}.csv',encoding='utf-8',index=False)
-            method(data1train,num).to_csv(f'data1train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data2train,num).to_csv(f'data2train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data3train,num).to_csv(f'data3train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data4train,num).to_csv(f'data4train{%strategy}{%num}.csv', encoding='utf-8', index=False)
+            method(data0train,num).to_csv(f'data0train{strategy}{num}.csv',encoding='utf-8',index=False)
+            method(data1train,num).to_csv(f'data1train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data2train,num).to_csv(f'data2train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data3train,num).to_csv(f'data3train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data4train,num).to_csv(f'data4train{strategy}{num}.csv', encoding='utf-8', index=False)
         else:
-            method(data0train).to_csv(f'data0train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data1train).to_csv(f'data1train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data2train).to_csv(f'data2train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data3train).to_csv(f'data3train{%strategy}{%num}.csv', encoding='utf-8', index=False)
-            method(data4train).to_csv(f'data4train{%strategy}{%num}.csv', encoding='utf-8', index=False)
+            method(data0train).to_csv(f'data0train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data1train).to_csv(f'data1train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data2train).to_csv(f'data2train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data3train).to_csv(f'data3train{strategy}{num}.csv', encoding='utf-8', index=False)
+            method(data4train).to_csv(f'data4train{strategy}{num}.csv', encoding='utf-8', index=False)
 if __name__ == '__main':
     rawdata = pd.read_csv('rawdata0sort.csv')
     generate(rawdata,manykernalreplace,100000)
