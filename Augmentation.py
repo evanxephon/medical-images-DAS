@@ -2,6 +2,7 @@ import pandas as pd
 import random
 from itertools import combinations
 import pickle
+import threading
 
 # 生成所有组合的数据，策略为 三个成分组合成一个训练数据
 def generate_3X(data, type, component=3):
@@ -150,14 +151,36 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
     return dataset
 
 
-def generate(rawdata,strategy,num = None):
+class outputthread(threading.Thread):
+    def __init__(self,function,data,num=None,kernalsize=None):
+        threading.Thread.__init__(self)
+        self.function = function
+        self.data = data
+        self.num = num
+        self.kernalsize = kernalsize
+    def run(self):
+        print('onethreadstart')
+        if num and kernalsize:
+            data = self.function(self.data,self.num,self.kernalsize)
+        elif not num and not kernalsize:
+            data = self.function(self.data)
+        elif not kernalsize and num:
+            data = self.function(self.data,self.num)
+        elif kernalsize and not num:
+            data = self.function(self.data,self.kernalsize)
+        data.to_csv(f'{self.data}_{self.function}.csv',encodin=None,index=False)
+        print('onedatafinished')
+        
+        
+if __name__ == '__main':
+    rawdata = pd.read_csv('rawdata0sort.csv')
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
     data2 = rawdata[rawdata['label'] == 2]
     data3 = rawdata[rawdata['label'] == 3]
     data4 = rawdata[rawdata['label'] == 4]
 
-    # 训练集和验证集的比例设为4：1
+    # 训练集和验证集的比例暂时设为4：1，随时可以改动
     # 0    265   200/65
     # 1     49   40/9
     # 2     58   48/10
@@ -166,61 +189,20 @@ def generate(rawdata,strategy,num = None):
 
     # def partition(data,proportion=0.8):
     data0train = data0.iloc[:200, :]
-    data0test = data0.iloc[200:, :]
     data1train = data1.iloc[:40, :]
-    data1test = data1.iloc[40:, :]
     data2train = data2.iloc[:48, :]
-    data2test = data2.iloc[48:, :]
     data3train = data3.iloc[:48, :]
-    data3test = data3.iloc[48:, :]
     data4train = data4.iloc[:54, :]
-    data4test = data4.iloc[54:, :]
-    if strategy == '3X':
-        if num:
-            data4train = generate_3X_withnum(data4train,num,4)
-            data4train.to_csv(f'data4train{num}.csv', encoding='utf-8', index=False)
-            # with open('data4train.pickle', 'wb') as f:
-            #     pickle.dump(data4train, f, protocol=pickle.HIGHEST_PROTOCOL)
-            data1train = generate_3X_withnum(data1train,num,1)
-            data1train.to_csv(f'data1train{num}.csv',encoding='utf-8',index=False)
-            data3train = generate_3X_withnum(data3train,num,3)
-            data3train.to_csv(f'data3train{num}.csv',encoding='utf-8',index=False)
-            data0train = generate_3X_withnum(data0train,num,0)
-            data0train.to_csv(f'data0train{num}.csv',encoding='utf-8',index=False)
-            data2train = generate_3X_withnum(data2train,num,2)
-            data2train.to_csv(f'data2train{num}.csv',encoding='utf-8',index=False)
-        else:
-            generate_3X(data0train, 0).to_csv('data0train3X.csv',encoding='utf-8',index=False)
-            generate_3X(data1train, 1).to_csv('data1train3X.csv', encoding='utf-8', index=False)
-            generate_3X(data2train, 2).to_csv('data2train3X.csv', encoding='utf-8', index=False)
-            generate_3X(data3train, 3).to_csv('data4train3X.csv', encoding='utf-8', index=False)
-            generate_3X(data4train, 4).to_csv('data5train3X.csv', encoding='utf-8', index=False)
-    method = False
-    if num:
-        if strategy == 'manykernaladd':
-            method = generate_different_areas_add_withnum
-        elif strategy == 'manykernalreplace':
-            method = generate_different_areas_replace_withnum
-    elif not num:
-        if strategy == 'onekernal':
-            method = generate_fixed_kernal
-        elif strategy == 'manykernaladd':
-            method = generate_different_areas_add
-        elif strategy == 'manykernalreplace':
-            method = generate_different_areas_replace
-    if method:
-        if num:
-            method(data0train,num).to_csv(f'data0train{strategy}{num}.csv',encoding='utf-8',index=False)
-            method(data1train,num).to_csv(f'data1train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data2train,num).to_csv(f'data2train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data3train,num).to_csv(f'data3train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data4train,num).to_csv(f'data4train{strategy}{num}.csv', encoding='utf-8', index=False)
-        else:
-            method(data0train).to_csv(f'data0train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data1train).to_csv(f'data1train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data2train).to_csv(f'data2train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data3train).to_csv(f'data3train{strategy}{num}.csv', encoding='utf-8', index=False)
-            method(data4train).to_csv(f'data4train{strategy}{num}.csv', encoding='utf-8', index=False)
-if __name__ == '__main':
-    rawdata = pd.read_csv('rawdata0sort.csv')
-    generate(rawdata,manykernalreplace,100000)
+    # 选择生成策略，生成数量（可选）和生成kernal的size（可选）
+    thread0 = outputthread(function=,data0train,num=,kernalsize=)
+    thread1 = outputthread(function=,data0train,num=,kernalsize=)
+    thread2 = outputthread(function=,data0train,num=,kernalsize=)
+    thread3 = outputthread(function=,data0train,num=,kernalsize=)
+    thread4 = outputthread(function=,data0train,num=,kernalsize=)
+    
+    thread0.start()
+    thread1.start()
+    thread2.start()
+    thread3.start()
+    thread4.start()
+    
