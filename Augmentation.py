@@ -50,6 +50,7 @@ def generate_fixed_kernal(data,kernalsize=(2,28)):
     dataset = pd.DataFrame(columns=data.columns)
     for i in range(len(data)):
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        augrows = pd.DataFrame(columns=data.columns)
         for j in range(len(data)):
             if j != i:
                 for k in range(horizontalsize):
@@ -58,8 +59,9 @@ def generate_fixed_kernal(data,kernalsize=(2,28)):
                         b = ((34 * l) + k + kernalsize[1])
                         thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
                         thechosenrow.iloc[:, (a+34):(b+34)] = data.iloc[j, (a+34):(b+34)].values
-                        dataset = dataset.append(thechosenrow)
+                        augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        dataset = dataset.append(augrows) 
     return dataset
 
 # 策略为 先将34个区域的数据分成六个大的区域，再在这些小的区域上用kernal
@@ -71,6 +73,7 @@ def generate_different_areas_add(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),
         verticalsize = 4 - kernalsize[x][0] + 1
         for i in range(len(data)):
             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+            augrows = pd.DataFrame(columns=data.columns)
             for j in range(len(data)):
                 if j != i:
                     for k in range(horizontalsize):
@@ -79,9 +82,9 @@ def generate_different_areas_add(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),
                                 a = (sum(district[:x])+m+k)*4 + l
                                 b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
                                 thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
-                            dataset = pd.concat([dataset,thechosenrow])
+                            augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-
+        dataset = pd.concat([dataset,augrows])
     return dataset
 
 # 策略同上，但是指定生成数量
@@ -93,6 +96,7 @@ def generate_different_areas_add_withnum(data,kernalsize=((2,4),(2,5),(2,2),(2,2
     set2 = random.sample(sampleset2,40)
     for i in set1:
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        augrows = pd.DataFrame(columns=data.columns)
         for j in set2:
             for x in range(len(district)):
                 horizontalsize = district[x] - kernalsize[x][1] + 1
@@ -103,8 +107,9 @@ def generate_different_areas_add_withnum(data,kernalsize=((2,4),(2,5),(2,2),(2,2
                             a = (sum(district[:x])+m+k)*4 + l
                             b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
                             thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
-                        dataset = pd.concat([dataset,thechosenrow])
+                        augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        dataset = pd.concat([dataset,augrows])
     return dataset
 
 # 策略同上上，只是add加变成了replace替换
@@ -115,6 +120,7 @@ def generate_different_areas_replace(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2
         verticalsize = 4 - kernalsize[x][0] + 1
         for i in range(len(data)):
             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+            augrows = pd.DataFrame(columns=data.columns)
             for j in range(len(data)):
                 if j != i:
                     for k in range(horizontalsize):
@@ -123,8 +129,9 @@ def generate_different_areas_replace(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2
                                 a = (sum(district[:x])+m+k)*4 + l
                                 b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
                                 thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
-                            dataset = pd.concat([dataset,thechosenrow])
+                            augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        dataset = pd.concat([dataset,augrows])    
     return dataset
 
 # 策略同上，但指定生成数量
@@ -136,6 +143,7 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
     set2 = random.sample(sampleset2,40)
     for i in set1:
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        augrows = pd.DataFrame(columns=data.columns)
         for j in set2:
             for x in range(len(district)):
                 horizontalsize = district[x] - kernalsize[x][1] + 1
@@ -146,8 +154,9 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
                             a = (sum(district[:x])+m+k)*4 + l
                             b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
                             thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
-                        dataset = pd.concat([dataset,thechosenrow])
+                        augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        dataset = pd.concat([dataset,augrows])
     return dataset
 
 
