@@ -84,7 +84,7 @@ def generate_different_areas_add(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),
                                 thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                             augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        dataset = pd.concat([dataset,augrows])
+            dataset = pd.concat([dataset,augrows])
     return dataset
 
 # 策略同上，但是指定生成数量
@@ -131,7 +131,7 @@ def generate_different_areas_replace(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2
                                 thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
                             augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        dataset = pd.concat([dataset,augrows])    
+            dataset = pd.concat([dataset,augrows])    
     return dataset
 
 # 策略同上，但指定生成数量
@@ -161,10 +161,11 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
 
 
 class outputthread(threading.Thread):
-    def __init__(self,function,data,num=None,kernalsize=None):
+    def __init__(self,function,thetype,data,num=None,kernalsize=None):
         threading.Thread.__init__(self)
         self.function = function
         self.data = data
+        self.type = thetype
         self.num = num
         self.kernalsize = kernalsize
     def run(self):
@@ -177,7 +178,7 @@ class outputthread(threading.Thread):
             data = self.function(self.data,self.num)
         elif kernalsize and not num:
             data = self.function(self.data,self.kernalsize)
-        data.to_csv(f'{self.data}_{self.function}.csv',encodin=None,index=False)
+        data.to_csv(f'{self.type}.csv',encoding=None,index=False)
         print('onedatafinished')
         
         
@@ -203,11 +204,11 @@ if __name__ == '__main':
     data3train = data3.iloc[:48, :]
     data4train = data4.iloc[:54, :]
     # 选择生成策略，生成数量（可选）和生成kernal的size（可选）
-    thread0 = outputthread(function=,data0train,num=,kernalsize=)
-    thread1 = outputthread(function=,data0train,num=,kernalsize=)
-    thread2 = outputthread(function=,data0train,num=,kernalsize=)
-    thread3 = outputthread(function=,data0train,num=,kernalsize=)
-    thread4 = outputthread(function=,data0train,num=,kernalsize=)
+    thread0 = outputthread(function=,0,data0train,num=,kernalsize=)
+    thread1 = outputthread(function=,1,data0train,num=,kernalsize=)
+    thread2 = outputthread(function=,2,data0train,num=,kernalsize=)
+    thread3 = outputthread(function=,3,data0train,num=,kernalsize=)
+    thread4 = outputthread(function=,4,data0train,num=,kernalsize=)
     
     thread0.start()
     thread1.start()
