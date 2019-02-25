@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init
 
+
 class Net(nn.Module):
     #layers is array that contain 3 element，they are l1，l2，l3's input size，l4's output size is 5 (5 types)
     def __init__(self,layers,type=5,component=1):
