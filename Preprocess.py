@@ -16,7 +16,7 @@ def preprocess(num):
     dflabel.columns = ['label']
     return pd.concat([data,dflabel],axis=1)
 
-# 这一版的预处理函数是为了解决数据量不一致的问题
+# load data from .mat file
 def preprocess1(num):
     data = pd.DataFrame(index=range(num))
 
@@ -30,13 +30,13 @@ def preprocess1(num):
     extrafeature = pd.read_csv('./diagnosis2/diagnosis_2nd/demographics.csv')
     data = pd.concat([data, extrafeature], axis=1)
 
-    # 把label数据加上去
+    # put on the label
     label = scipy.io.loadmat('./diagnosis2/diagnosis_2nd/features_tuo/group1.mat')
     dflabel = pd.DataFrame(label['group_subjects'])
     dflabel.columns = ['label']
     return pd.concat([data, dflabel], axis=1)
 
-# 为了将脑部同类位置放在连续的位置，而做的预处理改动
+# manually put the district from the same area together
 def preprocess2(num):
     data = pd.DataFrame(index=range(num))
 
@@ -47,7 +47,7 @@ def preprocess2(num):
         feature = scipy.io.loadmat(f'./diagnosis2/diagnosis_2nd/features_tuo/feature{i+1}.mat')
         rawdata = pd.DataFrame(feature['feature_subjects'])
         rawdata.columns = np.array([0.1,0.2,0.3,0.4])+i+1
-        # 数据量不一致
+        # the data offered 's size sometimes changes 
         rawdata = rawdata.iloc[:num,:]
 
         data = pd.concat([data,rawdata],axis=1)
