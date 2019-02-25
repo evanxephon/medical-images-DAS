@@ -182,7 +182,7 @@ class outputthread(threading.Thread):
         print('onedatafinished')
         
         
-if __name__ == '__main':
+if __name__ == '__main__':
     rawdata = pd.read_csv('rawdata0sort.csv')
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
@@ -198,11 +198,18 @@ if __name__ == '__main':
     # 4     73   54/19
 
     # def partition(data,proportion=0.8):
-    data0train = data0.iloc[:200, :]
+    '''data0train = data0.iloc[:200, :]
     data1train = data1.iloc[:40, :]
     data2train = data2.iloc[:48, :]
     data3train = data3.iloc[:48, :]
-    data4train = data4.iloc[:54, :]
+    data4train = data4.iloc[:54, :]'''
+    
+    data0train = data0.iloc[:245, :]
+    data1train = data1.iloc[:29, :]
+    data2train = data2.iloc[:38, :]
+    data3train = data3.iloc[:42, :]
+    data4train = data4.iloc[:52, :]
+    
     # 选择生成策略，生成数量（可选）和生成kernal的size（可选）
     thread0 = outputthread(function=,0,data0train,num=,kernalsize=)
     thread1 = outputthread(function=,1,data0train,num=,kernalsize=)
