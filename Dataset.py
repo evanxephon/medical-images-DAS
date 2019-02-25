@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import torch.utils.data
 
-# 继承torch.utils.data.Dataset实现自己的数据集类
+# inherit from torch.utils.data.Dataset to realize myown dataset class
 class MyDataset(torch.utils.data.Dataset):
     def __init__(self,data):
         self.len = len(data)
@@ -21,15 +21,15 @@ class MyDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.len
 
-# onehot
+# onehotilize
 def getDummy(dataset):
     dataset['sex'] = dataset['sex'].astype('category')
     dataset['scanner'] = dataset['scanner'].astype('category')
     dataset = pd.get_dummies(dataset)
     return dataset
 
-def maketraindata(num,*traindata):
-    # 训练集
+def maketraindata(num,traindata):
+    # sample to get trainset (may not be a necessity)
     data0 = pd.read_csv(traindata[0]).sample(num)
     data1 = pd.read_csv(traindata[1]).sample(num)
     data2 = pd.read_csv(traindata[2]).sample(num)
@@ -41,7 +41,7 @@ def maketraindata(num,*traindata):
 
 def maketestdata(num,rawdata):
 
-    # 设置训练集和验证集
+    # get the testset ,it'd better be balanced so that we can use accuracy only to evaluate the model
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
     data2 = rawdata[rawdata['label'] == 2]
@@ -54,7 +54,7 @@ def maketestdata(num,rawdata):
     data3test = data3.iloc[-num:, :]
     data4test = data4.iloc[-num:, :]
 
-    # 测试数据做过采样操作来达到平衡数据集状态
+    # upsample the raw data to get balanced test data
     # testdata0 = data0test.loc[np.random.choice(data0test.index,size=num, replace=True),:]
     # testdata1 = data1test.loc[np.random.choice(data1test.index,size=num, replace=True),:]
     # testdata2 = data2test.loc[np.random.choice(data2test.index,size=num, replace=True),:]
@@ -65,13 +65,13 @@ def maketestdata(num,rawdata):
     return testdata
 
 def config(traindata,testdata):
-    # 设置每一批训练数据的大小
+    # set the batchsize and the other things
     batch_size = 128
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     train_dataset = MyDataset(getDummy(traindata))
     test_dataset = MyDataset(getDummy(testdata))
 
-    # 构造自定义数据读取接口
+    # set the dataloader api
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=batch_size,
                                                shuffle=True)
