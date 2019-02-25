@@ -170,13 +170,13 @@ class outputthread(threading.Thread):
         self.kernalsize = kernalsize
     def run(self):
         print('onethreadstart')
-        if num and kernalsize:
+        if self.num and self.kernalsize:
             data = self.function(self.data,self.num,self.kernalsize)
-        elif not num and not kernalsize:
+        elif not self.num and not self.kernalsize:
             data = self.function(self.data)
-        elif not kernalsize and num:
+        elif not self.kernalsize and self.num:
             data = self.function(self.data,self.num)
-        elif kernalsize and not num:
+        elif self.kernalsize and not self.num:
             data = self.function(self.data,self.kernalsize)
         data.to_csv(f'{self.type}.csv',encoding=None,index=False)
         print('onedatafinished')
