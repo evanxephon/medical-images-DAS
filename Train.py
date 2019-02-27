@@ -16,11 +16,11 @@ optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 # 得到dataloader实例
 train_loader,test_loader = Dataset.getloader(100000,20,
                                              pd.read_csv('rawdata0sort.csv'),
-                                             ['data0aug.csv',
+                                              'data0aug.csv',
                                               'data1aug.csv',
                                               'data2aug.csv',
                                               'data3aug.csv',
-                                              'data4aug.csv'])
+                                              'data4aug.csv')
 
 # 训练
 def train(epoch):
