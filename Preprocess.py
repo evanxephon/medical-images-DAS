@@ -60,6 +60,7 @@ def preprocess2(num):
     dflabel.columns = ['label']
     return pd.concat([data,dflabel],axis=1)
 
-preprocess(507).to_csv('rawdata.csv',encoding='utf-8',index=False)
-preprocess1(506).to_csv('rawdata0.csv', encoding='utf-8', index=False)
-preprocess2(506).to_csv('rawdata0sort.csv',encoding='utf-8',index=False)
+if  __name__ == '__main__':
+    preprocess(507).to_csv('rawdata.csv',encoding='utf-8',index=False)
+    preprocess1(506).to_csv('rawdata0.csv', encoding='utf-8', index=False)
+    preprocess2(506).to_csv('rawdata0sort.csv',encoding='utf-8',index=False)
