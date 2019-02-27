@@ -37,7 +37,7 @@ def maketraindata(num,traindata):
         traindata.append(traindatax) 
     return  traindata
 
-def maketestdata(num,rawdata,binary=False):
+'''def maketestdata(num,rawdata,binary=False):
 
     # get the testset ,it'd better be balanced so that we can use accuracy only to evaluate the model
     data0 = rawdata[rawdata['label'] == 0]
@@ -67,7 +67,7 @@ def maketestdata(num,rawdata,binary=False):
         # testdata4 = data4test.loc[np.random.choice(data4test.index,size=num, replace=True),:]
         testdata = data0test.append([data1test,data2test,data3test,data4test])
 
-    return testdata
+    return testdata'''
 
 def config(traindata,testdata,onehot=True):
     # set the batchsize and the other things
@@ -87,5 +87,5 @@ def config(traindata,testdata,onehot=True):
 
 def getloader(trainnum=100000,testnum=20,rawdata=pd.read_csv('rawdata0sort.csv'),*traindata):
     traindata = maketraindata(trainnum,traindata)
-    testdata = maketestdata(testnum,rawdata,binary=False)
+    testdata = pd.read_csv('')
     return config(traindata,testdata,onehot=True)
