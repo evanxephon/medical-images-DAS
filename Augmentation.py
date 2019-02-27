@@ -172,6 +172,7 @@ class outputthread(threading.Thread):
         self.kernalsize = kernalsize
     def run(self):
         print('onethreadstart')
+        start = time.clock()
         if self.num and self.kernalsize:
             data = self.function(self.data,self.num,self.kernalsize)
         elif not self.num and not self.kernalsize:
@@ -181,12 +182,14 @@ class outputthread(threading.Thread):
         elif self.kernalsize and not self.num:
             data = self.function(self.data,self.kernalsize)
         data.to_csv(f'{self.type}.csv',encoding=None,index=False)
+        end = time.clock()
         print('onedatafinished')
+        print(f'{start-end} seconds for type{self.type} augmentation')
         
 def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
     
     rawdata = pd.read_csv(data)
-    testdata = pd.Dataframe()
+    testdata = pd.DataFrame()
     
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
@@ -195,30 +198,31 @@ def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
     data4 = rawdata[rawdata['label'] == 4]
 
     if binary:
-        data1 = shuffle(data1.append([data2,data3,data4)])
+        data1 = shuffle(data1.append([data2,data3,data4]))
         data1['label'] = 1
         dataset = [data0,data1]
-        testnum = testnum/2
+        testnum = testnum//2
     else:
         dataset = [data0,data1,data2,data3,data4]
-        testnum = testnum/5
+        testnum = testnum//5
                         
     # 选择生成策略，生成数量（可选）和生成kernal的size（可选）                         
-    from x in len(dataset):  
-        datatrain = data.iloc[:testnum,:]
-        datatest = data.iloc[testnum:,:]
+    for x in range(len(dataset)):  
+        datatrain = dataset[x].iloc[:testnum,:]
+        datatest = dataset[x].iloc[testnum:,:]
         testdata = testdata.append(datatest)
     # open a thread
-        thread = outputthread(function,x,data0train,num,kernalsize=kernalsize[x])
+        thread = outputthread(function,x,datatrain,num,kernalsize=kernalsize[x])
         thread.start()
     # save the testdata
-    testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
+    # testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
+    testdata.to_csv('testdata.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    config('rawdata1sort.csv',generate_different_areas_replace,augnum=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+    '''config('rawdata1sort.csv',generate_different_areas_replace,augnum=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
           ((1,1),(1,1),(1,1),(1,1),(2,1),(2,1)),
           ((1,1),(1,3),(1,1),(2,1),(2,1),(2,1)),
           ((1,1),(1,3),(1,1),(2,1),(2,1),(2,1)),                                                                
-          ((2,1),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
-    config('rawdata1sort.csv',generate_different_areas_replace,augnum=False,testnum=100,kernalsize=,binary=True)                
+          ((2,1),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)'''
+    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
     
