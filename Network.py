@@ -25,10 +25,10 @@ class Net(nn.Module):
     def _initialize_weights(self):
         # print(self.modules())
         for m in self.modules():
-            print(m)
+            #print(m)
             if isinstance(m, nn.Linear):
                 # print(m.weight.data.type())
                 # input()
                 # m.weight.data.fill_(1.0)
                 torch.nn.init.xavier_uniform_(m.weight, gain=1)
-                print(m.weight)
+                #print(m.weight)
