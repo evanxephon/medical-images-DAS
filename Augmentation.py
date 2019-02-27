@@ -3,6 +3,8 @@ import random
 from itertools import combinations
 import pickle
 import threading
+from sklearn.utils import shuffle
+import time
 
 # 生成所有组合的数据，策略为 三个成分组合成一个训练数据
 def generate_3X(data, type, component=3):
@@ -181,45 +183,42 @@ class outputthread(threading.Thread):
         data.to_csv(f'{self.type}.csv',encoding=None,index=False)
         print('onedatafinished')
         
-        
-if __name__ == '__main__':
-    rawdata = pd.read_csv('rawdata0sort.csv')
+def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
+    
+    rawdata = pd.read_csv(data)
+    testdata = pd.Dataframe()
+    
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
     data2 = rawdata[rawdata['label'] == 2]
     data3 = rawdata[rawdata['label'] == 3]
     data4 = rawdata[rawdata['label'] == 4]
 
-    # 训练集和验证集的比例暂时设为4：1，随时可以改动
-    # 0    265   200/65
-    # 1     49   40/9
-    # 2     58   48/10
-    # 3     62   48/14
-    # 4     73   54/19
-
-    # def partition(data,proportion=0.8):
-    '''data0train = data0.iloc[:200, :]
-    data1train = data1.iloc[:40, :]
-    data2train = data2.iloc[:48, :]
-    data3train = data3.iloc[:48, :]
-    data4train = data4.iloc[:54, :]'''
+    if binary:
+        data1 = shuffle(data1.append([data2,data3,data4)])
+        data1['label'] = 1
+        dataset = [data0,data1]
+        testnum = testnum/2
+    else:
+        dataset = [data0,data1,data2,data3,data4]
+        testnum = testnum/5
+                        
+    # 选择生成策略，生成数量（可选）和生成kernal的size（可选）                         
+    from x in len(dataset):  
+        datatrain = data.iloc[:testnum,:]
+        datatest = data.iloc[testnum:,:]
+        testdata = testdata.append(datatest)
+    # open a thread
+        thread = outputthread(function,x,data0train,num,kernalsize=kernalsize[x])
+        thread.start()
+    # save the testdata
+    testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
     
-    data0train = data0.iloc[:245, :]
-    data1train = data1.iloc[:29, :]
-    data2train = data2.iloc[:38, :]
-    data3train = data3.iloc[:42, :]
-    data4train = data4.iloc[:52, :]
-    
-    # 选择生成策略，生成数量（可选）和生成kernal的size（可选）
-    thread0 = outputthread(function=,0,data0train,num=,kernalsize=)
-    thread1 = outputthread(function=,1,data0train,num=,kernalsize=)
-    thread2 = outputthread(function=,2,data0train,num=,kernalsize=)
-    thread3 = outputthread(function=,3,data0train,num=,kernalsize=)
-    thread4 = outputthread(function=,4,data0train,num=,kernalsize=)
-    
-    thread0.start()
-    thread1.start()
-    thread2.start()
-    thread3.start()
-    thread4.start()
+if __name__ == '__main__':
+    config('rawdata1sort.csv',generate_different_areas_replace,augnum=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+          ((1,1),(1,1),(1,1),(1,1),(2,1),(2,1)),
+          ((1,1),(1,3),(1,1),(2,1),(2,1),(2,1)),
+          ((1,1),(1,3),(1,1),(2,1),(2,1),(2,1)),                                                                
+          ((2,1),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
+    config('rawdata1sort.csv',generate_different_areas_replace,augnum=False,testnum=100,kernalsize=,binary=True)                
     
