@@ -163,13 +163,14 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
 
 
 class outputthread(threading.Thread):
-    def __init__(self,function,thetype,data,num=None,kernalsize=None):
+    def __init__(self,function,thetype,data,num=None,class='muti',kernalsize=None):
         threading.Thread.__init__(self)
         self.function = function
         self.data = data
         self.type = thetype
         self.num = num
         self.kernalsize = kernalsize
+        self.class = class
     def run(self):
         print('onethreadstart')
         start = time.clock()
@@ -181,7 +182,7 @@ class outputthread(threading.Thread):
             data = self.function(self.data,self.num)
         elif self.kernalsize and not self.num:
             data = self.function(self.data,self.kernalsize)
-        data.to_csv(f'{self.type}.csv',encoding=None,index=False)
+        data.to_csv(f'{self.type}-{self.class}.csv',encoding=None,index=False)
         end = time.clock()
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
@@ -202,9 +203,11 @@ def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
         data1['label'] = 1
         dataset = [data0,data1]
         testnum = testnum//2
+        class = 'binary'
     else:
         dataset = [data0,data1,data2,data3,data4]
         testnum = testnum//5
+        class = 'muti'
                         
     # 选择生成策略，生成数量（可选）和生成kernal的size（可选）                         
     for x in range(len(dataset)):  
@@ -212,13 +215,13 @@ def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
         datatest = dataset[x].iloc[-testnum:,:]
         testdata = testdata.append(datatest)
     # open a thread
-        thread = outputthread(function,x,datatrain,num,kernalsize=kernalsize[x])
+        thread = outputthread(function,x,datatrain,num,class=class,kernalsize=kernalsize[x])
         thread.start()
     # save the testdata
     # testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
-    testdata.to_csv('testdata.csv',encoding=None,index=False)
+    testdata.to_csv(f'testdata-{class}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
-    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
+    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
+    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
     
