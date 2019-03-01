@@ -4,23 +4,29 @@ import numpy as np
 import torch.utils.data
 from sklearn.utils import shuffle
 
+
 # inherit from torch.utils.data.Dataset to realize myown dataset class
 class MyDataset(torch.utils.data.Dataset):
     def __init__(self,data):
         self.len = len(data)
         self.data = data
+        data['label'] = data['label'].astype('int')
         label = data.loc[:,'label']
         feature = data.drop('label',axis=1)
-        for column in list(feature.columns[feature.isnull().sum() > 0]):
+        feature = feature.astype('float')
+        print(len(feature))
+        '''for column in list(feature.columns[feature.isnull().sum() > 0]):
             mean_val = feature[column].mean()
-            feature[column].fillna(mean_val, inplace=True)
+            feature[column].fillna(mean_val, inplace=True)'''
         self.label = torch.LongTensor(np.array(label))
         self.feature = torch.Tensor(np.array(feature))
+
     def __getitem__(self, index):
         return self.feature[index],self.label[index]
 
     def __len__(self):
         return self.len
+
 
 # onehotilize
 def getDummy(dataset):
@@ -31,11 +37,13 @@ def getDummy(dataset):
 
 def maketraindata(num,traindata):
     # sample to get trainset (may not be a necessity)
-    traindata = pd.Dataframe()
+    print(traindata)
+    traindataset = pd.DataFrame()
     for data in traindata:
-        traindatax = pd.read_csv(data).sample(num)
-        traindata.append(traindatax) 
-    return  traindata
+        traindatax = pd.read_csv(data)#.sample(num)
+        traindataset = traindataset.append(traindatax)
+    print(traindataset.describe()) 
+    return  traindataset
 
 '''def maketestdata(num,rawdata,binary=False):
 
@@ -71,21 +79,24 @@ def maketraindata(num,traindata):
 
 def config(traindata,testdata,onehot=True):
     # set the batchsize and the other things
-    batch_size = 128
+    batch_size = 64
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     if onehot:
-        train_dataset = MyDataset(getDummy(traindata))
-        test_dataset = MyDataset(getDummy(testdata))
+        traindata = MyDataset(getDummy(traindata))
+        testdata = MyDataset(getDummy(testdata))
+    else:
+        traindata = MyDataset(traindata)
+        testdata = MyDataset(testdata)
     # set the dataloader api
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+    train_loader = torch.utils.data.DataLoader(dataset=traindata,
                                                batch_size=batch_size,
                                                shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
+    test_loader = torch.utils.data.DataLoader(dataset=testdata,
                                               batch_size=batch_size,
                                               shuffle=False)
     return train_loader,test_loader
 
-def getloader(trainnum=100000,testnum=20,rawdata=pd.read_csv('rawdata0sort.csv'),*traindata):
+def getloader(trainnum,testdata,*traindata):
     traindata = maketraindata(trainnum,traindata)
-    testdata = pd.read_csv('')
-    return config(traindata,testdata,onehot=True)
+    testdata = pd.read_csv(testdata)
+    return config(traindata,testdata,onehot=False)

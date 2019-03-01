@@ -189,7 +189,7 @@ class outputthread(threading.Thread):
 def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
     
     rawdata = pd.read_csv(data)
-    testdata = pd.DataFrame()
+    testdata = pd.DataFrame(columns=rawdata.columns)
     
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
@@ -208,8 +208,8 @@ def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
                         
     # 选择生成策略，生成数量（可选）和生成kernal的size（可选）                         
     for x in range(len(dataset)):  
-        datatrain = dataset[x].iloc[:testnum,:]
-        datatest = dataset[x].iloc[testnum:,:]
+        datatrain = dataset[x].iloc[:-testnum,:]
+        datatest = dataset[x].iloc[-testnum:,:]
         testdata = testdata.append(datatest)
     # open a thread
         thread = outputthread(function,x,datatrain,num,kernalsize=kernalsize[x])
@@ -219,10 +219,6 @@ def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
     testdata.to_csv('testdata.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    '''config('rawdata1sort.csv',generate_different_areas_replace,augnum=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
-          ((1,1),(1,1),(1,1),(1,1),(2,1),(2,1)),
-          ((1,1),(1,3),(1,1),(2,1),(2,1),(2,1)),
-          ((1,1),(1,3),(1,1),(2,1),(2,1),(2,1)),                                                                
-          ((2,1),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)'''
-    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
+    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
+    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
     

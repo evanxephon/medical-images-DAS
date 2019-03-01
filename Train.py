@@ -14,13 +14,9 @@ model._initialize_weights()
 optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 
 # 得到dataloader实例
-train_loader,test_loader = Dataset.getloader(100000,20,
-                                             pd.read_csv('rawdata0sort.csv'),
-                                              'data0aug.csv',
-                                              'data1aug.csv',
-                                              'data2aug.csv',
-                                              'data3aug.csv',
-                                              'data4aug.csv')
+train_loader,test_loader = Dataset.getloader(100000,'testdata.csv','0.csv','1.csv') 
+# 'data0aug.csv','data1aug.csv','data2aug.csv','data3aug.csv','data4aug.csv')
+
 
 # 训练
 def train(epoch):
@@ -40,7 +36,7 @@ def train(epoch):
         # 更新参数
         optimizer.step()
 
-        if batch_idx % 200 == 0:
+        if batch_idx % 1000 == 0:
             # 输出结果如：Train Epoch: 1 [0/60000 (0%)]   Loss: 2.292192
             #             Train Epoch: 1 [12800/60000 (21%)]  Loss: 2.289466
             #                        轮数-批次-完整数据大小--------损失函数
@@ -72,6 +68,6 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    for epoch in range(500):
+    for epoch in range(100):
         train(epoch)
         test()
