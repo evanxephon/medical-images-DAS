@@ -14,10 +14,6 @@ class MyDataset(torch.utils.data.Dataset):
         label = data.loc[:,'label']
         feature = data.drop('label',axis=1)
         feature = feature.astype('float')
-        print(len(feature))
-        '''for column in list(feature.columns[feature.isnull().sum() > 0]):
-            mean_val = feature[column].mean()
-            feature[column].fillna(mean_val, inplace=True)'''
         self.label = torch.LongTensor(np.array(label))
         self.feature = torch.Tensor(np.array(feature))
 
@@ -44,6 +40,12 @@ def maketraindata(num,traindata):
         traindataset = traindataset.append(traindatax)
     print(traindataset.describe()) 
     return  traindataset
+
+def fillnan(data):
+    for column in list(data.columns[data.isnull().sum() > 0]):
+        mean_val = feature[column].mean()
+        data[column].fillna(mean_val, inplace=True)
+    return data
 
 def upsample(data,num):
     return data = data.loc[np.random.choice(data.index,size=num, replace=True),:]
