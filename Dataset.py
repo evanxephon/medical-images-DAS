@@ -57,7 +57,7 @@ def upsample(data,num):
 def config(traindata,testdata,onehot=True):
 
     # set the batchsize and the other things
-    batch_size = 96
+    batch_size = 64
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
     # onehot

@@ -5,20 +5,24 @@ from torch.autograd import Variable
 import pandas as pd
 import Dataset
 
-def config(shape=(100,100,100),learningrate=0.01,learningrateschema=optim.SGD,testdata='',traindata=(),epoch=100,upsamplenum=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',traindata=(),epoch=100,upsamplenum=False):
     # hypeparameters/weights initialize
-    model = Network.Net(shape)
+    global model 
+    model = Network.Net(shape,classnum)
     model.cuda()
     model._initialize_weights()
 
     # SGD plus momentum
+    global optimizer 
     optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.5)
 
     # get the dataloader
-    train_loader,test_loader = Dataset.getloader(upsamplenum,testdata,traindata)
+    global train_loader
+    global test_loader 
+    train_loader, test_loader = Dataset.getloader(upsamplenum,testdata,traindata)
    
     for i in range(epoch):
-        train(epoch)
+        train(i)
         test()
          
 def train(epoch):
@@ -66,4 +70,4 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    config(shape=(100,100,100),learningrate=0.02,learningrateschema=optim.SGD,testdata='testdata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100)
+    config(shape=(100,100,100),classnum=5,learningrate=0.02,learningrateschema=optim.SGD,testdata='testdata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100)
