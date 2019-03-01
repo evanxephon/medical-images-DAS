@@ -5,20 +5,19 @@ from torch.autograd import Variable
 import pandas as pd
 import Dataset
 
-# hypeparameters/weights initialize
-model = Network.Net([100,100,100])
-model.cuda()
-model._initialize_weights()
+def config(shape=(100,100,100),learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',traindata=()):
+    # hypeparameters/weights initialize
+    model = Network.Net(shape)
+    model.cuda()
+    model._initialize_weights()
 
-# SGD plus momentum
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+    # SGD plus momentum
+    optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.5)
 
-# get the dataloader
-train_loader,test_loader = Dataset.getloader(100000,'testdata.csv','0.csv','1.csv') 
-# 'data0aug.csv','data1aug.csv','data2aug.csv','data3aug.csv','data4aug.csv')
+    # get the dataloader
+    train_loader,test_loader = Dataset.getloader(100000,testdata,traindata) 
+    # 'data0aug.csv','data1aug.csv','data2aug.csv','data3aug.csv','data4aug.csv')
 
-
-# train
 def train(epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -64,6 +63,7 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
+    config(shape=(100,100,100),learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',traindata=('0.csv','1.csv'))
     for epoch in range(100):
         train(epoch)
         test()
