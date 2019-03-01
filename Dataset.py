@@ -33,14 +33,18 @@ def getDummy(dataset):
 
 def maketraindata(num,traindata):
     # sample to get trainset (may not be a necessity)
+    print('training with:')
     print(traindata)
     traindataset = pd.DataFrame()
     for data in traindata:
-        traindatax = pd.read_csv(data)#.sample(num)
-        traindataset = traindataset.append(traindatax)
-    print(traindataset.describe()) 
+        if num:
+            traindatax = pd.read_csv(data).sample(num)
+        else:
+            traindatax = pd.read_csv(data)
+        traindataset = traindataset.append(traindatax) 
     return  traindataset
 
+# fill the NaN with mean value or something else
 def fillnan(data):
     for column in list(data.columns[data.isnull().sum() > 0]):
         mean_val = feature[column].mean()
@@ -48,18 +52,22 @@ def fillnan(data):
     return data
 
 def upsample(data,num):
-    return data = data.loc[np.random.choice(data.index,size=num, replace=True),:]
+    return data.loc[np.random.choice(data.index,size=num, replace=True),:]
 
 def config(traindata,testdata,onehot=True):
+
     # set the batchsize and the other things
-    batch_size = 64
+    batch_size = 96
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
+
+    # onehot
     if onehot:
-        traindata = MyDataset(getDummy(traindata))
-        testdata = MyDataset(getDummy(testdata))
-    else:
-        traindata = MyDataset(traindata)
-        testdata = MyDataset(testdata)
+        traindata = getDummy(traindata)
+        testdata = getDummy(testdata)
+    
+    traindata = MyDataset(traindata)
+    testdata = MyDataset(testdata)
+
     # set the dataloader api
     train_loader = torch.utils.data.DataLoader(dataset=traindata,
                                                batch_size=batch_size,
@@ -69,7 +77,7 @@ def config(traindata,testdata,onehot=True):
                                               shuffle=False)
     return train_loader,test_loader
 
-def getloader(trainnum,testdata,traindata):
-    traindata = maketraindata(trainnum,traindata)
+def getloader(upsamplenum,testdata,traindata):
+    traindata = maketraindata(upsamplenum,traindata)
     testdata = pd.read_csv(testdata)
     return config(traindata,testdata,onehot=False)
