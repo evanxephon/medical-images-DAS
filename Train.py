@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 import pandas as pd
+import torch
 import Dataset
 
 
@@ -50,18 +51,19 @@ def train(epoch):
             #             Train Epoch: 1 [12800/60000 (21%)]  Loss: 2.289466
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.data[0]))
+                100. * batch_idx / len(train_loader), loss.item()))
 
 def validate():
     validate_loss = 0
     correct = 0
     for data, target in validate_loader:
-        data, target = Variable(data, volatile=True), Variable(target)
+        with torch.no_grad():
+            data, target = Variable(data), Variable(target)
         data = data.cuda()
         target = target.cuda()
         output = model(data)
         # calculate the sum of loss for validate set
-        validate_loss += F.nll_loss(output, target).data[0]
+        validate_loss += F.nll_loss(output, target).data.item()
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -76,12 +78,13 @@ def test():
     test_loss = 0
     correct = 0
     for data, target in test_loader:
-        data, target = Variable(data, volatile=True), Variable(target)
+        with torch.no_grad():
+            data, target = Variable(data), Variable(target)
         data = data.cuda()
         target = target.cuda()
         output = model(data)
         # calculate the sum of loss for testset
-        test_loss += F.nll_loss(output, target).data[0]
+        test_loss += F.nll_loss(output, target).data.item()
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
