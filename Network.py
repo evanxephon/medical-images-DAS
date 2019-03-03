@@ -12,11 +12,15 @@ class Net(nn.Module):
         self.l2 = nn.Linear(layers[0], layers[1]) # layers[0]:l1's input size
         self.l3 = nn.Linear(layers[1], layers[2]) # layers[1]:l2's input size
         self.l4 = nn.Linear(layers[2], type) # layer[2]:l3's input size
+        self.dropout = nn.Dropout(p=0.6)
 
     def forward(self, x):
         x = F.relu(self.l1(x))
+        x = self.dropout(x)
         x = F.relu(self.l2(x))
+        x = self.dropout(x)
         x = F.relu(self.l3(x))
+        x = self.dropout(x)
         # activation function :softmax,here we use log_softmax which'll match the NLLLoss function，combine them we get the same effect as 
         # softmax+crossentropy
         return F.log_softmax(self.l4(x), dim=1)
