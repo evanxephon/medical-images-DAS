@@ -54,7 +54,7 @@ def fillnan(data):
 def upsample(data,num):
     return data.loc[np.random.choice(data.index,size=num, replace=True),:]
 
-def config(traindata,testdata,onehot=True):
+def config(traindata,validatedata,testdata,onehot=True):
 
     # set the batchsize and the other things
     batch_size = 64
@@ -63,21 +63,27 @@ def config(traindata,testdata,onehot=True):
     # onehot
     if onehot:
         traindata = getDummy(traindata)
+        validatedata = getDummy(validatedata)
         testdata = getDummy(testdata)
     
     traindata = MyDataset(traindata)
+    validatedata = MyDataset(validatedata)
     testdata = MyDataset(testdata)
 
     # set the dataloader api
     train_loader = torch.utils.data.DataLoader(dataset=traindata,
                                                batch_size=batch_size,
                                                shuffle=True)
+    validate_loader = torch.utils.data.DataLoader(dataset=validatedata,
+                                               batch_size=batch_size,
+                                               shuffle=False)
     test_loader = torch.utils.data.DataLoader(dataset=testdata,
                                               batch_size=batch_size,
                                               shuffle=False)
-    return train_loader,test_loader
+    return train_loader,validate_loader,test_loader
 
-def getloader(upsamplenum,testdata,traindata):
+def getloader(upsamplenum,traindata,validatedata,testdata):
     traindata = maketraindata(upsamplenum,traindata)
     testdata = pd.read_csv(testdata)
-    return config(traindata,testdata,onehot=False)
+    validatedata = pd.read_csv(validatedata)
+    return config(traindata,validatedata,testdata,onehot=False)

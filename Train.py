@@ -5,7 +5,8 @@ from torch.autograd import Variable
 import pandas as pd
 import Dataset
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',traindata=(),epoch=100,upsamplenum=False):
+
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False):
     # hypeparameters/weights initialize
     global model 
     model = Network.Net(shape,classnum)
@@ -18,11 +19,13 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
 
     # get the dataloader
     global train_loader
-    global test_loader 
-    train_loader, test_loader = Dataset.getloader(upsamplenum,testdata,traindata)
+    global test_loader
+    global validate_loader 
+    train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
    
     for i in range(epoch):
         train(i)
+        validate()
         test()
          
 def train(epoch):
@@ -49,6 +52,26 @@ def train(epoch):
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.data[0]))
 
+def validate():
+    validate_loss = 0
+    correct = 0
+    for data, target in validate_loader:
+        data, target = Variable(data, volatile=True), Variable(target)
+        data = data.cuda()
+        target = target.cuda()
+        output = model(data)
+        # calculate the sum of loss for validate set
+        validate_loss += F.nll_loss(output, target).data[0]
+        # max means the prediction
+        pred = output.data.max(1, keepdim=True)[1]
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
+    validate_loss /= len(validate_loader.dataset)
+    # the output is like0m~ZValidate set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
+    print('\nValidate set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        validate_loss, correct, len(validate_loader.dataset),
+        100. * correct / len(validate_loader.dataset)))
+
 def test():
     test_loss = 0
     correct = 0
@@ -70,4 +93,4 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    config(shape=(100,100,100),classnum=5,learningrate=0.02,learningrateschema=optim.SGD,testdata='testdata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100)
+    config(shape=(100,100,100),classnum=5,learningrate=0.002,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000)
