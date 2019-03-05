@@ -7,16 +7,28 @@ import torch
 import Dataset
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None):
     # hypeparameters/weights initialize
+
+    print(f'shape:{shape}')
+    print(f'classnum:{classnum}')
+    print(f'learningrate:{learningrate}')
+    #print(f'learningrateschema:{learningrateschema}')
+    print(f'testdata:{testdata}')
+    print(f'validatedata:{validatedata}')
+    print(f'traindata:{traindata}')
+    print(f'epoch:{epoch}')
+    print(f'upsamplenum:{upsamplenum}')
+    print(f'nomalization:{nomalization}')
+
     global model 
     model = Network.Net(shape,classnum)
     model.cuda()
     model._initialize_weights()
-
+    
     # SGD plus momentum
     global optimizer 
-    optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.5)
+    optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.5)#, weight_decay=1e-5)
 
     # get the dataloader
     global train_loader
@@ -25,22 +37,39 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
    
     for i in range(epoch):
-        train(i)
+        train(i,nomalization=nomalization)
         validate()
         test()
          
-def train(epoch):
+def train(epoch,nomalization=None):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = Variable(data), Variable(target)
         data = data.cuda()
         target = target.cuda()
+        
+        l1_regularization, l2_regularization = torch.tensor(0), torch.tensor(0)
         # 将上一批次的梯度计算值置零 set the former batch's gradient value zero
         optimizer.zero_grad()
         output = model(data)
         # lossfunction: cross entropy,we use NLLLoss here（Negative Log Likelihood）
         # cause we take the log of the output tensor before
         loss = F.nll_loss(output, target)
+        
+        l1_regularization = 0
+        l2_regularization = 0
+        
+        l1lambda = 0.1
+        l2lambda = 0.05
+  
+        if nomalization:  
+            for param in model.parameters():
+                if nomalization == 'L1':
+                    l1_regularization += torch.norm(param, 1)
+                elif nomalization == 'L2':
+                    l2_regularization += torch.norm(param, 2)
+        loss = loss + l1lambda*l1_regularization + l2lambda*l2_regularization
+
         loss.cuda()
         loss.backward()
         # update weights 
@@ -96,4 +125,5 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    config(shape=(100,100,100),classnum=5,learningrate=0.002,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000)
+    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
+    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2')
