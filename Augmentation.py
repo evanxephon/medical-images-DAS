@@ -43,12 +43,12 @@ def generate_3X_withnum(data, size, type, component=3):
         output = output.append(tmp1)
     return output
 
-# 生成所有kernal替换产生的数据 策略为 选择一个固定大小的kernal，
-# 每次选择kernal位置的一小块替换成其他数据的相同部分
-# kernal也像卷积操作一样移动，我们数据看成 4（年数）* 34（区域数）的矩形
-def generate_fixed_kernal(data,kernalsize=(2,28)):
-    horizontalsize = 34-kernalsize[1]+1
-    verticalsize = 4-kernalsize[0]+1
+# 生成所有kernel替换产生的数据 策略为 选择一个固定大小的kernel，
+# 每次选择kernel位置的一小块替换成其他数据的相同部分
+# kernel也像卷积操作一样移动，我们数据看成 4（年数）* 34（区域数）的矩形
+def generate_fixed_kernel(data,kernelsize=(2,28)):
+    horizontalsize = 34-kernelsize[1]+1
+    verticalsize = 4-kernelsize[0]+1
     dataset = pd.DataFrame(columns=data.columns)
     for i in range(len(data)):
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -58,7 +58,7 @@ def generate_fixed_kernal(data,kernalsize=(2,28)):
                 for k in range(horizontalsize):
                     for l in range(verticalsize):
                         a = ((34 * l) + k)
-                        b = ((34 * l) + k + kernalsize[1])
+                        b = ((34 * l) + k + kernelsize[1])
                         thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
                         thechosenrow.iloc[:, (a+34):(b+34)] = data.iloc[j, (a+34):(b+34)].values
                         augrows = augrows.append(thechosenrow)
@@ -66,13 +66,13 @@ def generate_fixed_kernal(data,kernalsize=(2,28)):
         dataset = dataset.append(augrows) 
     return dataset
 
-# 策略为 先将34个区域的数据分成六个大的区域，再在这些小的区域上用kernal
+# 策略为 先将34个区域的数据分成六个大的区域，再在这些小的区域上用kernel
 # 但是是将别的数据加上去
-def generate_different_areas_add(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+def generate_different_areas_add(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
     for x in range(len(district)):
-        horizontalsize = district[x] - kernalsize[x][1] + 1
-        verticalsize = 4 - kernalsize[x][0] + 1
+        horizontalsize = district[x] - kernelsize[x][1] + 1
+        verticalsize = 4 - kernelsize[x][0] + 1
         for i in range(len(data)):
             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
             augrows = pd.DataFrame(columns=data.columns)
@@ -80,9 +80,9 @@ def generate_different_areas_add(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),
                 if j != i:
                     for k in range(horizontalsize):
                         for l in range(verticalsize):
-                            for m in range(kernalsize[x][1]):
+                            for m in range(kernelsize[x][1]):
                                 a = (sum(district[:x])+m+k)*4 + l
-                                b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
+                                b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
                                 thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                             augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -90,7 +90,7 @@ def generate_different_areas_add(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),
     return dataset
 
 # 策略同上，但是指定生成数量
-def generate_different_areas_add_withnum(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+def generate_different_areas_add_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
     sampleset1 = list(range(200))
     sampleset2 = list(range(200))
@@ -101,13 +101,13 @@ def generate_different_areas_add_withnum(data,kernalsize=((2,4),(2,5),(2,2),(2,2
         augrows = pd.DataFrame(columns=data.columns)
         for j in set2:
             for x in range(len(district)):
-                horizontalsize = district[x] - kernalsize[x][1] + 1
-                verticalsize = 4 - kernalsize[x][0] + 1
+                horizontalsize = district[x] - kernelsize[x][1] + 1
+                verticalsize = 4 - kernelsize[x][0] + 1
                 for k in range(horizontalsize):
                     for l in range(verticalsize):
-                        for m in range(kernalsize[x][1]):
+                        for m in range(kernelsize[x][1]):
                             a = (sum(district[:x])+m+k)*4 + l
-                            b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
+                            b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
                             thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                         augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -115,11 +115,11 @@ def generate_different_areas_add_withnum(data,kernalsize=((2,4),(2,5),(2,2),(2,2
     return dataset
 
 # 策略同上上，只是add加变成了replace替换
-def generate_different_areas_replace(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
     for x in range(len(district)):
-        horizontalsize = district[x] - kernalsize[x][1] + 1
-        verticalsize = 4 - kernalsize[x][0] + 1
+        horizontalsize = district[x] - kernelsize[x][1] + 1
+        verticalsize = 4 - kernelsize[x][0] + 1
         for i in range(len(data)):
             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
             augrows = pd.DataFrame(columns=data.columns)
@@ -127,9 +127,9 @@ def generate_different_areas_replace(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2
                 if j != i:
                     for k in range(horizontalsize):
                         for l in range(verticalsize):
-                            for m in range(kernalsize[x][1]):
+                            for m in range(kernelsize[x][1]):
                                 a = (sum(district[:x])+m+k)*4 + l
-                                b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
+                                b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
                                 thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
                             augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -137,7 +137,7 @@ def generate_different_areas_replace(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2
     return dataset
 
 # 策略同上，但指定生成数量
-def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
     sampleset1 = list(range(200))
     sampleset2 = list(range(200))
@@ -148,13 +148,13 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
         augrows = pd.DataFrame(columns=data.columns)
         for j in set2:
             for x in range(len(district)):
-                horizontalsize = district[x] - kernalsize[x][1] + 1
-                verticalsize = 4 - kernalsize[x][0] + 1
+                horizontalsize = district[x] - kernelsize[x][1] + 1
+                verticalsize = 4 - kernelsize[x][0] + 1
                 for k in range(horizontalsize):
                     for l in range(verticalsize):
-                        for m in range(kernalsize[x][1]):
+                        for m in range(kernelsize[x][1]):
                             a = (sum(district[:x])+m+k)*4 + l
-                            b = (sum(district[:x])+m+k)*4 + l + kernalsize[x][0]
+                            b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
                             thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
                         augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -163,31 +163,31 @@ def generate_different_areas_replace_withnum(data,kernalsize=((2,4),(2,5),(2,2),
 
 
 class outputthread(threading.Thread):
-    def __init__(self,function,thetype,data,num=None,classnum='muti',kernalsize=None):
+    def __init__(self,function,thetype,data,num=None,classnum='muti',kernelsize=None):
         threading.Thread.__init__(self)
         self.function = function
         self.data = data
         self.type = thetype
         self.num = num
-        self.kernalsize = kernalsize
+        self.kernelsize = kernelsize
         self.classnum = classnum
     def run(self):
         print('onethreadstart')
         start = time.clock()
-        if self.num and self.kernalsize:
-            data = self.function(self.data,self.num,self.kernalsize)
-        elif not self.num and not self.kernalsize:
+        if self.num and self.kernelsize:
+            data = self.function(self.data,self.num,self.kernelsize)
+        elif not self.num and not self.kernelsize:
             data = self.function(self.data)
-        elif not self.kernalsize and self.num:
+        elif not self.kernelsize and self.num:
             data = self.function(self.data,self.num)
-        elif self.kernalsize and not self.num:
-            data = self.function(self.data,self.kernalsize)
+        elif self.kernelsize and not self.num:
+            data = self.function(self.data,self.kernelsize)
         data.to_csv(f'{self.type}-{self.classnum}.csv',encoding=None,index=False)
         end = time.clock()
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False):
     
     rawdata = pd.read_csv(data)
     testdata = pd.DataFrame(columns=rawdata.columns)
@@ -209,19 +209,19 @@ def config(data,function,num=False,testnum=100,kernalsize=False,binary=False):
         testnum = testnum//5
         classnum = 'muti'
                         
-    # 选择生成策略，生成数量（可选）和生成kernal的size（可选）                         
+    # 选择生成策略，生成数量（可选）和生成kernel的size（可选）                         
     for x in range(len(dataset)):  
         datatrain = dataset[x].iloc[:-testnum,:]
         datatest = dataset[x].iloc[-testnum:,:]
         testdata = testdata.append(datatest)
     # open a thread
-        thread = outputthread(function,x,datatrain,num,classnum=classnum,kernalsize=kernalsize[x])
+        thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
         thread.start()
     # save the testdata
     # testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
     testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
-    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernalsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
+    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
+    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
     
