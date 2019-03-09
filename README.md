@@ -2,7 +2,7 @@
 Implementation of some of strategies on data augmentation in medical field
 ## Background
 医疗领域使用深度学习的一个问题是数据量太少。图像数据的数据增强已有很实用的策略并被广泛使用，但是非图像数据的数据增强还没有。而我们现在有的数据比较特殊，它不是图像数据，但是数据之间仍存在位置上的关系。我们为这类数据设计了几种数据增强策略，并通过实验证明它们是否有效。
-English Version:
+### English Version:
 The lack of data is an essential problem in the field of medical analysis. While the technique of data augmentation has already been wildly applied into image processing, there is few instances of non-image data augmention application. What we deal within this project is the data of some residual scores of raw MRI image. Every single entry of the data is a sort of measurement of a certain region of brain so that the data itself remains the relationship between different lobes of brain. To recognise the hidden pattern of the data by trainning our classical DNN as a classifier, we proposed several different strategies of data augmentation so we can have sufficient trainning data.
 
 ## The Data 
