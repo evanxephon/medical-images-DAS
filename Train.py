@@ -7,7 +7,7 @@ import torch
 import Dataset
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False):
     # hypeparameters/weights initialize
 
     print(f'shape:{shape}')
@@ -20,9 +20,13 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
     print(f'nomalization:{nomalization}')
+    print(f'cnn:{cnn}')    
 
-    global model 
-    model = Network.Net(shape,classnum)
+    global model
+    if cnn:
+        model = Network.CNN(classnum)
+    else: 
+        model = Network.Net(shape,classnum)
     model.cuda()
     model._initialize_weights()
     
@@ -60,7 +64,7 @@ def train(epoch,nomalization=None):
         l2_regularization = 0
         
         l1lambda = 0.1
-        l2lambda = 0.1
+        l2lambda = 0.15
   
         if nomalization:  
             for param in model.parameters():
@@ -126,4 +130,4 @@ def test():
 
 if __name__ == '__main__':
     #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
-    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2')
+    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2',cnn=False)

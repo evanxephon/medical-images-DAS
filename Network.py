@@ -50,21 +50,24 @@ class CNN(nn.Module):
                      ), 
             nn.Dropout(0.5), 
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2) #2x2采样，output shape (16,14,14)
+            nn.MaxPool2d(kernel_size=2)
               
         )
-        self.conv2 = nn.Sequential(nn.Conv2d(1, 1, 2, 1, 0), #output shape (32,7,7)
+        '''self.conv2 = nn.Sequential(nn.Conv2d(1, 1, 2, 1, 0),
                                   nn.Dropout(0.5), 
                                   nn.ReLU(),
-                                  nn.MaxPool2d(2))
-        self.l3 = nn.Linear(1*32*2,100) 
-        self.l4 = nn.Linear(100,type)
+                                  #nn.MaxPool2d(2)
+        )'''
+        self.l3 = nn.Linear(1*32*2,64) 
+        self.l4 = nn.Linear(64,type)
         
     def forward(self, x):
-        x = x.view(-1,34,4)
+        print(f'shapebefore:{x.shape}')
+        x = x.view(-1,1,34,4) # the dimension is related to the convolution channel
+        print(f'shapeafter:{x.shape}') 
         x = self.conv1(x)
-        x = self.conv2(x)
-        x = x.view(x.size(0), -1)#flat (batch_size, 32*7*7)
+        #x = self.conv2(x)
+        x = x.view(x.size(0), -1) # flat
         x = self.l3(x)
         x = self.l4(x)
         return F.log_softmax(self.l4(x), dim=1)
