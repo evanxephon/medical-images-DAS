@@ -48,28 +48,34 @@ class CNN(nn.Module):
                      stride=1, #filter step
                      padding=0 
                      ), 
-            nn.Dropout(0.5), 
+            nn.Dropout(0.3), 
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2)
+            #nn.MaxPool2d(kernel_size=2)
               
         )
-        '''self.conv2 = nn.Sequential(nn.Conv2d(1, 1, 2, 1, 0),
-                                  nn.Dropout(0.5), 
+        self.conv2 = nn.Sequential(nn.Conv2d(1, 1, 2, 1, 0),
+                                  nn.Dropout(0.3), 
                                   nn.ReLU(),
                                   #nn.MaxPool2d(2)
-        )'''
+        )
         self.l3 = nn.Linear(1*32*2,64) 
         self.l4 = nn.Linear(64,type)
         
     def forward(self, x):
-        print(f'shapebefore:{x.shape}')
+        #print(f'shapebefore:{x.shape}')
+
         x = x.view(-1,1,34,4) # the dimension is related to the convolution channel
-        print(f'shapeafter:{x.shape}') 
+        #print(f'shapeafter:{x.shape}') 
         x = self.conv1(x)
-        #x = self.conv2(x)
-        x = x.view(x.size(0), -1) # flat
+
+        x = self.conv2(x)
+        #print(f'shapeafterconv:{x.shape}')
+
+        x = x.view(-1,64)
+        #print(f'shapeafterview:{x.shape}')
+        #x = x.view(x.size(0), -1) # flat
+
         x = self.l3(x)
-        x = self.l4(x)
         return F.log_softmax(self.l4(x), dim=1)
     
     def _initialize_weights(self):

@@ -1,10 +1,11 @@
 import pandas as pd
 import random
-from itertools import combinations
-import pickle
+#from itertools import combinations
+#import pickle
 import threading
 from sklearn.utils import shuffle
 import time
+import os
 
 # 生成所有组合的数据，策略为 三个成分组合成一个训练数据
 def generate_3X(data, type, component=3):
@@ -182,13 +183,18 @@ class outputthread(threading.Thread):
             data = self.function(self.data,self.num)
         elif self.kernelsize and not self.num:
             data = self.function(self.data,self.kernelsize)
-        data.to_csv(f'{self.type}-{self.classnum}.csv',encoding=None,index=False)
+        data.to_csv(f'{self.type}-{self.classnum}-2019-3-9.csv',encoding=None,index=False)
         end = time.clock()
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False):
-    
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False):
+    # choose the date saving path
+    if savepath:
+        if not os.path.exist(savepath)
+            os.mkdir(savepath)
+        os.chdir(savepath)
+ 
     rawdata = pd.read_csv(data)
     testdata = pd.DataFrame(columns=rawdata.columns)
     
@@ -208,7 +214,11 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False):
         dataset = [data0,data1,data2,data3,data4]
         testnum = testnum//5
         classnum = 'muti'
-                        
+
+    # cross validation
+    for data in dataset:
+        data = shuffle(data)                      
+    
     # 选择生成策略，生成数量（可选）和生成kernel的size（可选）                         
     for x in range(len(dataset)):  
         datatrain = dataset[x].iloc[:-testnum,:]
@@ -219,9 +229,9 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False):
         thread.start()
     # save the testdata
     # testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
-    testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+    testdata.to_csv(f'testdata-{classnum}-2019-3-9.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False)
-    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
+    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False,savepath='/data/dataaugmentationinmedicalfield')
+    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
     
