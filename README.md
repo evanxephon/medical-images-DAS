@@ -1,5 +1,6 @@
 # Data Augmentation Strategy in Medical Field
 Implementation of some of strategies on data augmentation in medical field
+
 ## Background
 医疗领域使用深度学习的一个问题是数据量太少。图像数据的数据增强已有很实用的策略并被广泛使用，但是非图像数据的数据增强还没有。而我们现在有的数据比较特殊，它不是图像数据，但是数据之间仍存在位置上的关系。我们为这类数据设计了几种数据增强策略，并通过实验证明它们是否有效。  
   
@@ -11,10 +12,11 @@ The lack of data is an essential problem in the field of medical analysis. While
 The experimental data is the residual scores of the raw MRI image which mainly covers 34 regions of brain. Every region yields a numerical measurement as every alcoholism subject has a record for 4 years. Thus our original input data dimension will be at 34 * 4. We now having a data set with 505 samples and 5 labels (e.g., ctrl,d1,d2,etc.) . For additional information, these 34 region has been divided into 6 lobes based on clinical studies along with 3 other features (e.g., age,gender,scanner) of the every single records.
 
 ## Data Augmentation Strategy (DAS)
-### Combination
+
+### Adherent
 最初的策略，是将X个同类别的数据直接组合到一起来生成新的数据。该方法可以轻松生成大量数据，X的数量如果超过4，生成该策略所有可能数据就已经没有可能了。这个方法的问题，我认为是通过改变网络结构，我们能得到同样的效果。  
 
-Our very first strategy is directly adhere several data to generate a new one with a bigger dimension according on the parameter of multiplier \lambda we choose.
+Our very first strategy is directly adhere several data together to generate a new one with a bigger dimension according on the parameter of multiplier λ we choose. This strategy can easily generate massive new data set, somehow the problem is that not only the generated data set is inflated too fast and the dimension of every new data will equal to old data dimension * λ which will cause dimension explosion even with a fairly small λ.
 
 ### Kernel
 #### Fixed Kernel
