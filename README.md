@@ -10,7 +10,7 @@ The lack of data is an essential problem in the field of medical analysis. While
 
 The experimental data is the residual scores of the raw MRI image which mainly covers 34 regions of brain. Every region yields a numerical measurement as every alcoholism subject has a record for 4 years. Thus our original input data dimension will be at 34 * 4. We now having a data set with 505 samples and 5 labels (e.g., ctrl,d1,d2,etc.) . For additional information, these 34 region has been divided into 6 lobes based on clinical studies along with 3 other features (e.g., age,gender,scanner) of the every single records.
 
-## Augmentation Strategic
+## Data Augmentation Strategy (DAS)
 ### Combination
 最初的策略，是将X个同类别的数据直接组合到一起来生成新的数据。该方法可以轻松生成大量数据，X的数量如果超过4，生成该策略所有可能数据就已经没有可能了。这个方法的问题，我认为是通过改变网络结构，我们能得到同样的效果。
 ### Kernel
