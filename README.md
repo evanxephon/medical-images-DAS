@@ -8,7 +8,7 @@ The lack of data is an essential problem in the field of medical analysis. While
 ## The Data 
 数据是人脑MRI扫描结果，一共有34个扫描的区域，被扫描后每个区域会给出一个数值，每个患者也就是一个记录给出TA四年的数据，也就是一共有34 * 4 个features，数据的label为一个分类结果，一共有五种，在这里就标为ABCDE。34个扫描区域还被分为6个lobes，每个lobes包括不同的区域。还有三个额外的feature包括患者性别，设备品牌等。  
 
-The experimental data is the residual scores of the raw MRI image which mainly covers 34 regions of brain. Every region yields a numerical measurement as every subject has a record for 4 years. Thus our original input data dimension will be at 34 * 4. We now having a data set with 505 samples and 5 labels (e.g., ctrl,d1,d2,etc.) . For additional information, these 34 region has been divided into 6 lobes based on clinical studies along with 3 other features (e.g., age,gender,scanner) of the every single records.
+The experimental data is the residual scores of the raw MRI image which mainly covers 34 regions of brain. Every region yields a numerical measurement as every alcoholism subject has a record for 4 years. Thus our original input data dimension will be at 34 * 4. We now having a data set with 505 samples and 5 labels (e.g., ctrl,d1,d2,etc.) . For additional information, these 34 region has been divided into 6 lobes based on clinical studies along with 3 other features (e.g., age,gender,scanner) of the every single records.
 
 ## Augmentation Strategic
 ### Combination
