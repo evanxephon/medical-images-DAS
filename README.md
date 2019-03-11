@@ -12,7 +12,10 @@ The experimental data is the residual scores of the raw MRI image which mainly c
 
 ## Data Augmentation Strategy (DAS)
 ### Combination
-最初的策略，是将X个同类别的数据直接组合到一起来生成新的数据。该方法可以轻松生成大量数据，X的数量如果超过4，生成该策略所有可能数据就已经没有可能了。这个方法的问题，我认为是通过改变网络结构，我们能得到同样的效果。
+最初的策略，是将X个同类别的数据直接组合到一起来生成新的数据。该方法可以轻松生成大量数据，X的数量如果超过4，生成该策略所有可能数据就已经没有可能了。这个方法的问题，我认为是通过改变网络结构，我们能得到同样的效果。  
+
+Our very first strategy is directly adhere several data to generate a new one with a bigger dimension according on the parameter of multiplier \lambda we choose.
+
 ### Kernel
 #### Fixed Kernel
 选择X * Y大小的kernel，将kernel中选定的区域替换成其他记录同样区域的数据。这种方法同样可以生成大量数据。我们原本数据为一维的长度为134的数据，在kernal替换策略中，我们需先将数据转换成4 * 34的二维数据。在这里我们在不同year之间的数据替换可能能保存疾病的一种变化趋势。
