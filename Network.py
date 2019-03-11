@@ -1,4 +1,4 @@
-import torch.nn as nn:
+import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init
 
@@ -7,9 +7,9 @@ class Net(nn.Module):
     #layers is array that contain 3 element，they are l1，l2，l3's input size，l4's output size is 5 (5 types)
     def __init__(self,layers,type=5,component=1):
         super(Net, self).__init__()
-        # the input size：districts 34 *years 4 + 5(extra features after onehotilized)
-        self.bn_input = nn.BatchNorm1d(136, momentum=0.5)  
-        self.l1 = nn.Linear(34*4*component, layers[0]) #
+        # the input size districts 34 *years 4 + 5(extra features after onehotilized)
+        self.bn_input = nn.BatchNorm1d(100, momentum=0.5)  
+        self.l1 = nn.Linear(34*4*component, layers[0])
 
         self.bn1 = nn.BatchNorm1d(100, momentum=0.5)
         self.l2 = nn.Linear(layers[0], layers[1]) # layers[0]:l1's input size
