@@ -136,5 +136,5 @@ def test():
 
 if __name__ == '__main__':
     #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
-    #config(shape=(50,50,50),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization=False,cnn=True,datapath='/data/dataaugmentationinmedicalfield')
-    config(shape=(100,100,100),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=False,datapath='/data/dataaugmentationinmedicalfield')
+    config(shape=(50,50,50),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=True,datapath='/data/dataaugmentationinmedicalfield')
+    #config(shape=(100,100,100),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=False,datapath='/data/dataaugmentationinmedicalfield')

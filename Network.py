@@ -63,10 +63,10 @@ class CNN(nn.Module):
         self.conv1 = nn.Sequential( #input shape (1,34,4)
             nn.Conv2d(in_channels=1, 
                       out_channels=1, 
-                     kernel_size=2, #filter size
-                     stride=1, #filter step
-                     padding=0 
-                     ), 
+                      kernel_size=2, #filter size
+                      stride=1, #filter step
+                      padding=0 
+                      ), 
             #nn.Dropout(0.3), 
             nn.ReLU(),
             #nn.MaxPool2d(kernel_size=2)
