@@ -3,11 +3,13 @@ Implementation of some of strategies on data augmentation in medical field
 ## Background
 医疗领域使用深度学习的一个问题是数据量太少。图像数据的数据增强已有很实用的策略并被广泛使用，但是非图像数据的数据增强还没有。而我们现在有的数据比较特殊，它不是图像数据，但是数据之间仍存在位置上的关系。我们为这类数据设计了几种数据增强策略，并通过实验证明它们是否有效。  
   
-English Version:  
 The lack of data is an essential problem in the field of medical analysis. While the technique of data augmentation has already been wildly applied into image processing, there is few instances of non-image data augmention application. What we deal within this project is the data of some residual scores of raw MRI image. Every single entry of the data is a sort of measurement of a certain region of brain so that the data itself remains the relationship between different lobes of brain. To recognise the hidden pattern of the data by trainning our classical DNN as a classifier, we proposed several different strategies of data augmentation so we can have sufficient trainning data.
 
 ## The Data 
-数据是人脑MRI扫描结果，一共有34个扫描的区域，被扫描后每个区域会给出一个数值，每个患者也就是一个记录给出TA四年的数据，也就是一共有34 * 4 个features，数据的label为一个分类结果，一共有五种，在这里就标为ABCDE。34个扫描区域还被分为6个lobes，每个lobes包括不同的区域。还有三个额外的feature包括患者性别，设备品牌等。
+数据是人脑MRI扫描结果，一共有34个扫描的区域，被扫描后每个区域会给出一个数值，每个患者也就是一个记录给出TA四年的数据，也就是一共有34 * 4 个features，数据的label为一个分类结果，一共有五种，在这里就标为ABCDE。34个扫描区域还被分为6个lobes，每个lobes包括不同的区域。还有三个额外的feature包括患者性别，设备品牌等。  
+
+The experimental data is the residual scores of the raw MRI image which mainly covers 34 regions of brain. Every region yields a numerical measurement as every subject has a record for 4 years. Thus our original input data dimension will be at 34 * 4. We now having a data set with 505 samples and 5 labels (e.g., ctrl,d1,d2,etc.) . For additional information, these 34 region has been divided into 6 lobes based on clinical studies along with 3 other features (e.g., age,gender,scanner) of the every single records.
+
 ## Augmentation Strategic
 ### Combination
 最初的策略，是将X个同类别的数据直接组合到一起来生成新的数据。该方法可以轻松生成大量数据，X的数量如果超过4，生成该策略所有可能数据就已经没有可能了。这个方法的问题，我认为是通过改变网络结构，我们能得到同样的效果。
