@@ -24,14 +24,15 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'traindata:{traindata}')
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
-    print(f'nomalization:{nomalization}')
-    print(f'cnn:{cnn}')    
+    print(f'nomalization:{nomalization}')    
 
     global model
     if cnn:
         model = Network.CNN(classnum)
+        print('we created a CNN')
     else: 
         model = Network.Net(shape,classnum)
+        print(f'we created a NN')
     model.cuda()
     model._initialize_weights()
     
@@ -69,7 +70,7 @@ def train(epoch,nomalization=None):
         l2_regularization = 0
         
         l1lambda = 0.1
-        l2lambda = 0.15
+        l2lambda = 0.1
   
         if nomalization:  
             for param in model.parameters():
@@ -135,4 +136,5 @@ def test():
 
 if __name__ == '__main__':
     #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
-    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2',cnn=True,datapath='/data/dataaugmentationinmedicalfield')
+    #config(shape=(50,50,50),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization=False,cnn=True,datapath='/data/dataaugmentationinmedicalfield')
+    config(shape=(100,100,100),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=False,datapath='/data/dataaugmentationinmedicalfield')

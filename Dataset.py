@@ -38,7 +38,7 @@ def maketraindata(num,traindata):
     traindataset = pd.DataFrame()
     for data in traindata:
         if num:
-            traindatax = pd.read_csv(data).sample(num)
+            traindatax = pd.read_csv(data).sample(num,replace=True)
         else:
             traindatax = pd.read_csv(data)
         traindataset = traindataset.append(traindatax) 
@@ -65,21 +65,17 @@ def config(traindata,validatedata,testdata,onehot=True):
         traindata = getDummy(traindata)
         validatedata = getDummy(validatedata)
         testdata = getDummy(testdata)
-    
-    traindata = MyDataset(traindata)
-    validatedata = MyDataset(validatedata)
-    testdata = MyDataset(testdata)
 
     # set the dataloader api
-    train_loader = torch.utils.data.DataLoader(dataset=traindata,
-                                               batch_size=batch_size,
-                                               shuffle=True)
-    validate_loader = torch.utils.data.DataLoader(dataset=validatedata,
-                                               batch_size=batch_size,
-                                               shuffle=False)
-    test_loader = torch.utils.data.DataLoader(dataset=testdata,
-                                              batch_size=batch_size,
-                                              shuffle=False)
+    traindata = MyDataset(traindata)
+    train_loader = torch.utils.data.DataLoader(dataset=traindata, batch_size=batch_size,shuffle=True)
+    
+    validatedata = MyDataset(validatedata)
+    validate_loader = torch.utils.data.DataLoader(dataset=validatedata,batch_size=batch_size,shuffle=False)
+
+    testdata = MyDataset(testdata)
+    test_loader = torch.utils.data.DataLoader(dataset=testdata,batch_size=batch_size,shuffle=False)
+
     return train_loader,validate_loader,test_loader
 
 def getloader(upsamplenum,traindata,validatedata,testdata):
