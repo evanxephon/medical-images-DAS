@@ -16,7 +16,7 @@ The experimental data is the residual scores of the raw MRI image which mainly c
 ### Adherent
 最初的策略，是将X个同类别的数据直接组合到一起来生成新的数据。该方法可以轻松生成大量数据，X的数量如果超过4，生成该策略所有可能数据就已经没有可能了。这个方法的问题，我认为是通过改变网络结构，我们能得到同样的效果。  
 
-Our very first strategy is directly adhere several data together to generate a new one with a bigger dimension according on the parameter of multiplier λ we choose. This strategy can easily generate massive new data set, somehow the problem is that not only the generated data set is inflated too fast and the dimension of every new data will equal to old data dimension * λ which will cause dimension explosion even with a fairly small λ.
+Our very first strategy is to directly adhere several data together to generate a new one with a bigger dimension according on the parameter of multiplier λ we choose. This strategy can easily generate massive new data set, somehow the problem is that not only the generated data set is inflated too fast and the dimension of every new data will equal to old data dimension * λ which will cause dimension explosion even with a fairly small λ.
 
 ### Kernel
 #### Fixed Kernel
