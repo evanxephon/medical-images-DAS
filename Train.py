@@ -7,11 +7,11 @@ import torch
 import Dataset
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False):
-    # hypeparameters/weights initialize
-
-    print(f'shape:{shape}')
-    print(f'classnum:{classnum}')
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False,datapath=False):
+    
+    # print the config
+    print(f'latent-layer-shape:{shape}')
+    print(f'the-num-of-classes:{classnum}')
     print(f'learningrate:{learningrate}')
     #print(f'learningrateschema:{learningrateschema}')
     print(f'testdata:{testdata}')
@@ -20,13 +20,15 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
     print(f'nomalization:{nomalization}')
-    print(f'cnn:{cnn}')    
+    print(f'cnn:{cnn}')
+    print(f'path:{datapath}')
 
     global model
     if cnn:
         model = Network.CNN(classnum)
     else: 
         model = Network.Net(shape,classnum)
+        
     model.cuda()
     model._initialize_weights()
     
@@ -130,4 +132,4 @@ def test():
 
 if __name__ == '__main__':
     #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
-    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2',cnn=False)
+    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2',cnn=False,datapath=False)
