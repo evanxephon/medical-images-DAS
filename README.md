@@ -66,7 +66,7 @@ Update: 加入卷积后并未得到更好的准确率，同时对非图像数据
 ### RandomForest.py
 使用随机森林对原始数据进行了训练，因为随机森林是一种十分适合数据量很少的情况下的机器学习算法。使用随机森林，我们能确保自己没有跑偏，得到连训练原始数据都不如的结果。
 
-We are applying Random Forest algorithm to our original data to make sure the augmentation strategy would not bring us an even worse accuracy than the uninflated set.
+We are applying Random Forest algorithm to our original data to make sure that augmentation strategy would not bring us an even worse accuracy than the uninflated set.
 
 ## Challenges and Solutions So Far
 ### Imbalanced Data
