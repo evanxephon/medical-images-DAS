@@ -28,11 +28,10 @@ By choosing a fixed kernel with X * Y order for all original data cross differen
 #### Fixed Kernel Substitution for Different Lobes
 脑科学中将大脑一定区域归为一类，这每一类就称为一个lobe。因此为每一个lobe采用不同的kernel来生成数据显得非常合理，因为在同lobe的区域可能有更多的联系，替换生成的数据更接近该类别。  
 
-According to our neuroscience knowledge, there are several lobes which includes variant regions among human brain. Applying the theory we can rearrange and divide our original residual scores into different areas representing different lobes. In this case, we will then choose different order of kernel between different lobes and substituting them with the entries from other subject's measurements from same group label.   
+According to neuroscience knowledge, all the MRI image of human brain can be divided into several lobes which includes variant regions. Applying this theory, we can rearrange and divide our original residual scores matrix (which is our data format) into different areas representing different lobes. In this case, we will then choose different order of kernel between different lobes and substituting them with the entries from other subject's measurements from same group label.   
 
 #### Dynamic Kernels Substitution for Different Lobes
 对应每一种类别的数据生成，采用不同的kernels。这样做的原因主要是为了解决数据的类别不均匀的问题，数据不均衡会导致训练出来的分类器是naive的--预测结果总是为比例最高的类别即可保证训练集的loss很低，同时如果采用是同样分布的测试集，该分类器的准确率Accuracy也会很高，但是一些类别的Precision和Recall会为0，这样的分类器显然不是我们想要的。其解决方式之一即使提供类别均衡的训练数据，而我们在数据增强的过程中正好可以做到这点。
-
 
 
 #### Kernel Accumlation
@@ -77,8 +76,8 @@ Dropout的思想是在每次反向传播时，随机屏蔽一定比例的权值�
 批标准化即在每一层输入进入非线性的激活函数前，做一个标准化的操作，将输入向量变成均值为0，方差为1。变换的具体操作是：某个神经元对应的原始的激活x通过减去mini-Batch内m个实例获得的m个激活x求得的均值E(x)并除以求得的方差Var(x)来进行转换。经过变换后，为防止网络的表达能力下降，对变换后的输出做如下的scale和shift操作：y = ax+b,参数a和b同为需要训练的参数。
 我在网络中加入BatchNorm后，准确率有所上升，并且训练速度有所上升，但并未突破30%。
 ## Optimization
-### Optimization on Train
-#### Classic Tricks
+### Optimization on Training Process
+#### Classical Tricks
 训练速度的优化其实并不需要我们去操心太多，有很多普适性的优化Trick都已经被设置成默认的，想要使用只需要添加几行代码就可以了。
 像是我们的训练使用的自适应学习率策略是加上momentum动量，结合随机梯度下降的方式，在code中我只需要一句话就能设置好。  
 又比如参数初始化，我使用的著名的KaiMingHe-weight-initialize, 何恺明用论文证明了，他那样的初始参数能让训练收敛的更快。我没有去关注论文，但是依然用了他的方法。
@@ -86,7 +85,7 @@ BatchNorm也是被用来提高训练速度的。但是和Dropout的相性不好�
 #### Tuning the Hyperparameter
 深度学习被一些人戏称为炼丹，就是因为这超参数调优。我们的网络的超参数有这么些：隐藏层数目及输入输出向量维度，学习率，自适应学习率对应的动量比例，L2正则的lambda值，Dropout的比例，BatchNorm的动量值等等。索性对我们来说，重点并不是要调出完美的超参数配置而是适当调整得到一个还不错的准确率即可。毕竟我们的重点是证明生成策略有效并解释我们的数据。
 ### Optimization on Code
-#### Code Running Speed
+#### Time Complexity and Data Generating Speed
 最初的生成策略实现函数每生成新的一行数据，就将它加到我们最终输出的表后面，在实现中，我的代码也采用了这个逻辑。但是代码跑起来很慢，最初并没有觉得有什么问题，毕竟也是百万量级的数据生成，函数的时间复杂度也很高，包括了多个循环，这样的耗时也可能是合理的。  
 但是我们在一次生成数据的过程中，发现了函数的每一个循环的耗时在不断的增大，按照我实现的逻辑，每个循环之间并不应该有耗时上大的区别。检查后发现，就是这个把新数据加到表后面的操作实现的方式有问题，每加上一些数据，表就变得越长，将一行数据加到表的后方的操作就要耗费越长的时间，因为这个操作是要将表本身读取到内存之中的，当表的长度很长的时候，生成新数据的耗时已经算不了什么了，绝大数的时间都被用来读取表了，所以我们并不应该直接来这样操作，而是要每一个大的循环新建一个表作为中继，把新的数据都先加到它的后面，然后在一个大的循环结束后，将这个中继中的数据一次性的加入到我们最终输出的表之中，这样我们就减少了大量的读取一个长表的操作。百万数据的生成时间也从原来的几天变成几小时即可。
 #### Code Refactor
