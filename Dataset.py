@@ -38,7 +38,7 @@ def maketraindata(num,traindata):
     traindataset = pd.DataFrame()
     for data in traindata:
         if num:
-            traindatax = pd.read_csv(data).sample(num)
+            traindatax = pd.read_csv(data).sample(num,replace=True)
         else:
             traindatax = pd.read_csv(data)
         traindataset = traindataset.append(traindatax) 
