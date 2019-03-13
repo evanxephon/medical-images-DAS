@@ -33,7 +33,7 @@ According to neuroscience knowledge, all the MRI image of human brain can be div
 #### Dynamic Kernels Substitution for Different Lobes
 对应每一种类别的数据生成，采用不同的kernels。这样做的原因主要是为了解决数据的类别不均匀的问题，数据不均衡会导致训练出来的分类器是naive的--预测结果总是为比例最高的类别即可保证训练集的loss很低，同时如果采用是同样分布的测试集，该分类器的准确率Accuracy也会很高，但是一些类别的Precision和Recall会为0，这样的分类器显然不是我们想要的。其解决方式之一即使提供类别均衡的训练数据，而我们在数据增强的过程中正好可以做到这点。
 
-This strategy requires dynamic kernels between different lobes. The benefit is we can somehow make our generated data to be more balanced. 
+This strategy requires dynamic kernels between different lobes. Based on the algorithm, the benefit will bring us a more balanced generated data set which could be very crucial to train a non-naive classifier.
 
 #### Kernel Accumlation
 将指定区域的数据加上其他记录同样区域的数据。这样做的理论基础我没有很理解，但是不妨碍我们多做几次尝试。
