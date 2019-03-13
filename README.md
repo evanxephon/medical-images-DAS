@@ -38,24 +38,45 @@ This strategy requires dynamic kernels between different lobes. Based on the alg
 #### Kernel Accumlation
 将指定区域的数据加上其他记录同样区域的数据。这样做的理论基础我没有很理解，但是不妨碍我们多做几次尝试。
 
-We proposed this strategy by accumlating the value of data of different subject within same group label through the kernels. The reason is that if the difference between the implicit pattern and noise is monotonic, then the accumlation move will enhance the trend of pattern so the recognition and classification will be much easier.
+We proposed this strategy by accumlating the value of data of different subjects within same group label through the kernels. The reason is that if the difference between the implicit pattern and noise is monotonic, then the accumlation move will enhance the trend of pattern so the recognition and classification will be much easier.  
 
 ## Code
-机器学习框架主要采用了Pytorch。目前的代码都为重构过的版本，虽然仍然存在很多软件开发中常见的问题，但比起之前已经好用很多了。
+机器学习框架主要采用了Pytorch。目前的代码都为重构过的版本，虽然仍然存在很多软件开发中常见的问题，但比起之前已经好用很多了。  
+
+We're using Pytorch as our main package.
+
 ### Preprocess.py
 对数据做最初的预处理，原始数据为.mat格式，读取后，经过一些操作返回.csv文件。
+
+
+
 ### Augmentation.py
 实现了所有的数据增强策略，在前面说到的基础上，还实现了指定生成数量的实现版本，因为一些策略能产生的数据的量会超出我们的计算能力，因此生成一部分数据进行训练。
+
+
+
 ### Dataset.py
 将生成的数据和测试数据组合好，得到一个可以被网络调用的DataLoader实例。
+
+
+
 ### Network.py
 一个简单的多层全连接的神经网络的实现。我们可以手动调整各种超参数。
 又新加入卷积神经网络的版本。虽然卷积神经网络多用于图像。但是我认为卷积操作能提取脑部不同区域在年份之间的变化，需实验验证。
 Update: 加入卷积后并未得到更好的准确率，同时对非图像数据使用CNN结构不合理。
+
+
+
 ### Train.py
 这是我们进行训练的主程序，我们可以在训练时调整各种超参数和设置。
+
+
+
 ### RandomForest.py
 使用随机森林对原始数据进行了训练，因为随机森林是一种十分适合数据量很少的情况下的机器学习算法。使用随机森林，我们能确保自己没有跑偏，得到连训练原始数据都不如的结果。
+
+
+
 ## Challenges and Solutions So Far
 ### Imbalanced Data
 不平衡的数据集可能导致得到的分类器是Naive的，即预测结果始终为占比最多的类别，这确实是训练误差最小的分类器，同时如果测试集保持同样的分布，那么在该数据集上的准确率也会很高。但是对于不平衡的数据集，Accuracy准确率是一种非常片面的衡量标准，应该使用各个类别的Precision精准率和Recall召回率来衡量。
