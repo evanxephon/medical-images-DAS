@@ -7,7 +7,7 @@ import torch
 import Dataset
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False,datapath=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,regularization=None,cnn=False,datapath=False):
     
     # print the config
     print(f'latent-layer-shape:{shape}')
@@ -19,7 +19,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'traindata:{traindata}')
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
-    print(f'nomalization:{nomalization}')
+    print(f'regularization:{regularization}')
     print(f'cnn:{cnn}')
     print(f'path:{datapath}')
 
@@ -40,24 +40,30 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     global train_loader
     global test_loader
     global validate_loader 
+    
     train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
    
     for i in range(epoch):
-        train(i,nomalization=nomalization)
+        train(i,regularization=regularization)
         validate()
         test()
          
-def train(epoch,nomalization=None):
+def train(epoch,regularization=None):
+    
     model.train()
+    
     for batch_idx, (data, target) in enumerate(train_loader):
+        
         data, target = Variable(data), Variable(target)
         data = data.cuda()
         target = target.cuda()
         
         l1_regularization, l2_regularization = torch.tensor(0), torch.tensor(0)
-        # 将上一批次的梯度计算值置零 set the former batch's gradient value zero
+        
+        #  set the former batch's gradient value zero
         optimizer.zero_grad()
         output = model(data)
+        
         # lossfunction: cross entropy,we use NLLLoss here（Negative Log Likelihood）
         # cause we take the log of the output tensor before
         loss = F.nll_loss(output, target)
@@ -68,16 +74,20 @@ def train(epoch,nomalization=None):
         l1lambda = 0.1
         l2lambda = 0.15
   
-        if nomalization:  
+        if regularization:  
             for param in model.parameters():
-                if nomalization == 'L1':
+                
+                if regularization == 'L1':
                     l1_regularization += torch.norm(param, 1)
-                elif nomalization == 'L2':
+                    
+                elif regularization == 'L2':
                     l2_regularization += torch.norm(param, 2)
+                    
         loss = loss + l1lambda*l1_regularization + l2lambda*l2_regularization
 
         loss.cuda()
         loss.backward()
+        
         # update weights 
         optimizer.step()
 
@@ -89,47 +99,62 @@ def train(epoch,nomalization=None):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 def validate():
+    
     validate_loss = 0
     correct = 0
+    
     for data, target in validate_loader:
         with torch.no_grad():
             data, target = Variable(data), Variable(target)
+            
         data = data.cuda()
         target = target.cuda()
+        
         output = model(data)
+        
         # calculate the sum of loss for validate set
         validate_loss += F.nll_loss(output, target).data.item()
+        
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     validate_loss /= len(validate_loader.dataset)
+    
     # the output is like0m~ZValidate set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nValidate set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validate_loss, correct, len(validate_loader.dataset),
         100. * correct / len(validate_loader.dataset)))
 
 def test():
+    
     test_loss = 0
     correct = 0
+    
     for data, target in test_loader:
+        
         with torch.no_grad():
             data, target = Variable(data), Variable(target)
+            
         data = data.cuda()
         target = target.cuda()
+        
         output = model(data)
+        
         # calculate the sum of loss for testset
         test_loss += F.nll_loss(output, target).data.item()
+        
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     test_loss /= len(test_loader.dataset)
+    
     # the output is like：Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
-    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L2',cnn=False,datapath=False)
+    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization='L1')
+    config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization='L2',cnn=False,datapath=False)
