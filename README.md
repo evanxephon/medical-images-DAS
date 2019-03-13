@@ -43,39 +43,30 @@ We proposed this strategy by accumlating the value of data of different subjects
 ## Code
 机器学习框架主要采用了Pytorch。目前的代码都为重构过的版本，虽然仍然存在很多软件开发中常见的问题，但比起之前已经好用很多了。  
 
-We're using Pytorch as our main package.
+We're using Pytorch as our main package. This part is basically self-explainable by the name of the file itself.
 
 ### Preprocess.py
 对数据做最初的预处理，原始数据为.mat格式，读取后，经过一些操作返回.csv文件。
 
-
-
 ### Augmentation.py
 实现了所有的数据增强策略，在前面说到的基础上，还实现了指定生成数量的实现版本，因为一些策略能产生的数据的量会超出我们的计算能力，因此生成一部分数据进行训练。
 
-
-
 ### Dataset.py
 将生成的数据和测试数据组合好，得到一个可以被网络调用的DataLoader实例。
-
-
 
 ### Network.py
 一个简单的多层全连接的神经网络的实现。我们可以手动调整各种超参数。
 又新加入卷积神经网络的版本。虽然卷积神经网络多用于图像。但是我认为卷积操作能提取脑部不同区域在年份之间的变化，需实验验证。
 Update: 加入卷积后并未得到更好的准确率，同时对非图像数据使用CNN结构不合理。
 
-
-
 ### Train.py
 这是我们进行训练的主程序，我们可以在训练时调整各种超参数和设置。
-
 
 
 ### RandomForest.py
 使用随机森林对原始数据进行了训练，因为随机森林是一种十分适合数据量很少的情况下的机器学习算法。使用随机森林，我们能确保自己没有跑偏，得到连训练原始数据都不如的结果。
 
-
+We are applying Random Forest algorithm to our original data to make sure the augmentation strategy would not bring us an even worse accuracy than the uninflated set.
 
 ## Challenges and Solutions So Far
 ### Imbalanced Data
