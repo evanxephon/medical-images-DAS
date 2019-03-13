@@ -74,7 +74,7 @@ We are applying Random Forest algorithm to our original data to make sure that a
 目前关于不平衡数据的解决方法有很多种观点，可以通过上采样，下采样或生成数据的方式来改变数据的分布，也可以对损失函数加权等等。改变数据分布的方式是有弊端的，丧失训练集中关于数据的分布的信息。
 目前关于训练集不平衡的问题，我们目前采用的方式仍然是改变数据的分布，已我们的数据增强策略为主，上下采样为辅来得到平衡的数据集。对于测试集，我们特意选择了平衡的数据，为的是希望仅使用Accuracy准确率就能衡量分类器的优劣。  
 
-A naive classifier with a certain high overall accuracy can easily be deducted/trained by an imbalanced data set. Other than using the benchmark of Precision, Recall and F1-Measure to evaluate our model, we can also apply methods like up-sampling, sub-sampling or adding weights to loss function etc. to change the distribution of the data trending to a more balance way. Somehow we may risk losing some critical information among the original distribution of the data.
+A naive classifier with a certain high overall accuracy can easily be deducted/trained by an imbalanced data set. Other than using the benchmark of Precision, Recall and F1-Measure to evaluate our model, we can also apply methods like up-sampling, sub-sampling or adding weights to loss function etc. to change the distribution of the data trending to more balance way. Somehow we may risk losing some critical information among the original distribution of the data.
 
 We will split our original data to make the test data set to be well balanced, the rest part will be involved into the DAS.
 
