@@ -72,7 +72,12 @@ We are applying Random Forest algorithm to our original data to make sure that a
 ### Imbalanced Data
 不平衡的数据集可能导致得到的分类器是Naive的，即预测结果始终为占比最多的类别，这确实是训练误差最小的分类器，同时如果测试集保持同样的分布，那么在该数据集上的准确率也会很高。但是对于不平衡的数据集，Accuracy准确率是一种非常片面的衡量标准，应该使用各个类别的Precision精准率和Recall召回率来衡量。
 目前关于不平衡数据的解决方法有很多种观点，可以通过上采样，下采样或生成数据的方式来改变数据的分布，也可以对损失函数加权等等。改变数据分布的方式是有弊端的，丧失训练集中关于数据的分布的信息。
-目前关于训练集不平衡的问题，我们目前采用的方式仍然是改变数据的分布，已我们的数据增强策略为主，上下采样为辅来得到平衡的数据集。对于测试集，我们特意选择了平衡的数据，为的是希望仅使用Accuracy准确率就能衡量分类器的优劣。
+目前关于训练集不平衡的问题，我们目前采用的方式仍然是改变数据的分布，已我们的数据增强策略为主，上下采样为辅来得到平衡的数据集。对于测试集，我们特意选择了平衡的数据，为的是希望仅使用Accuracy准确率就能衡量分类器的优劣。  
+
+A naive classifier with a certain high overall accuracy can easily be deducted/trained by an imbalanced data set. Other than using the benchmark of Precision, Recall and F1-Measure to evaluate our model, we can also apply methods like up-sampling, sub-sampling or adding weights to loss function etc. to change the distribution of the data trending to a more balance way. Somehow we may risk losing some critical information among the original distribution of the data.
+
+We will split our original data to make the test data set to be well balanced, the rest part will be involved into the DAS.
+
 ### Insufficient Test Data
 我们可以生成足够多的数据来训练，并通过观察分类器在测试集之上的效果来判断我们的策略是否有效。但是，存在一个问题：测试集的数据数量很少。我们将原始数据分成训练集的种子（用来生成训练集）和测试集。测试集的数量只有100个，与此同时我们用来训练的数据经过生成后会达到百万级别。仅仅通过在100个数据的表现，来证明我们策略有效，其中存在很大的随机性，是非常没有说服力。同时我们是不能对测试数据进行生成的操作，不然就有一丝‘循环论证’的意味了——先假定我们的策略就能生成完美的真实数据，然后再去证明它。  
 解决测试数据少的问题，我们可以采取交叉验证。有多种交叉验证的方法，如K折交叉验证，留一交叉验证和留P交叉验证等等。它们主要的思想就是使用多次不同划分的训练和测试集来训练。验证集一般是用来评估模型预测的好坏和选择模型及其对应的参数。但是在我们的情况，我认为采用交叉验证的方法可以减少我们测试集过少带来的随机性的影响。 
