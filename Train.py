@@ -7,7 +7,7 @@ import torch
 import Dataset
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # print the config
     print(f'latent-layer-shape:{shape}')
@@ -19,7 +19,10 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'traindata:{traindata}')
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
-    print(f'regularization:{regularization}')
+    print(f'l1regularizationrate:{l1regularization}')
+    print(f'l2regularizationrate:{l2regularization}')
+    print(f'batchnormmomentom:{batchnorm}'
+    print(f'dropoutrate:{dropout}')
     print(f'cnn:{cnn}')
     print(f'path:{datapath}')
 
@@ -43,11 +46,11 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
    
     for i in range(epoch):
-        train(i,regularization=regularization)
+        train(i,l1regularization=l1regularization,l2regularization=l2regularization)
         validate()
         test()
          
-def train(epoch,regularization=None):
+def train(epoch,l1regularization=None,l2regularization=None):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = Variable(data), Variable(target)
@@ -55,24 +58,24 @@ def train(epoch,regularization=None):
         target = target.cuda()
         
         l1_regularization, l2_regularization = torch.tensor(0), torch.tensor(0)
-        # 将上一批次的梯度计算值置零 set the former batch's gradient value zero
+        # se� set the former batch's gradient value zero
         optimizer.zero_grad()
         output = model(data)
-        # lossfunction: cross entropy,we use NLLLoss here（Negative Log Likelihood）
+        # lossfunction: cross entropy,we use NLLLoss here, Negative Log Likelihood
         # cause we take the log of the output tensor before
         loss = F.nll_loss(output, target)
         
         l1_regularization = 0
         l2_regularization = 0
         
-        l1lambda = 0.1
-        l2lambda = 0.2
+        l1lambda = l1regularization
+        l2lambda = l2regularization
   
-        if regularization:  
+        if l1regularization and l2regularization:  
             for param in model.parameters():
-                if regularization == 'L1':
+                if l1regularization:
                     l1_regularization += torch.norm(param, 1)
-                elif regularization == 'L2':
+                if l2regularization:
                     l2_regularization += torch.norm(param, 2)
         loss = loss + l1lambda*l1_regularization + l2lambda*l2_regularization
 
@@ -82,7 +85,7 @@ def train(epoch,regularization=None):
         optimizer.step()
 
         if batch_idx % 1000 == 0:
-            # the output is like：Train Epoch: 1 [0/60000 (0%)]   Loss: 2.292192
+            # the output is like, Train Epoch: 1 [0/60000 (0%)]   Loss: 2.292192
             #             Train Epoch: 1 [12800/60000 (21%)]  Loss: 2.289466
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
@@ -125,11 +128,23 @@ def test():
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     test_loss /= len(test_loader.dataset)
-    # the output is like：Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
+    # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization='L1',dropout=0.15)
-    config(shape=(100,100,100),classnum=5,learningrate=0.005,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization=False,datapath=False,batchnorm=False,dropout=False)
+    config(shape=(100,100,100),
+           classnum=5,
+           learningrate=0.001,
+           learningrateschema=optim.SGD,
+           testdata='testdata.csv',
+           validatedata='validatedata.csv',
+           traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),
+           epoch=100,
+           upsamplenum=False,
+           l1regularization=False,
+           l2regularization=0.01,
+           datapath=False,
+           batchnorm=False,
+           dropout=False)
