@@ -7,7 +7,7 @@ import torch
 import Dataset
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # print the config
     print(f'latent-layer-shape:{shape}')
@@ -19,7 +19,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'traindata:{traindata}')
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
-    print(f'nomalization:{nomalization}')
+    print(f'regularization:{regularization}')
     print(f'cnn:{cnn}')
     print(f'path:{datapath}')
 
@@ -43,11 +43,11 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
    
     for i in range(epoch):
-        train(i,nomalization=nomalization)
+        train(i,regularization=regularization)
         validate()
         test()
          
-def train(epoch,nomalization=None):
+def train(epoch,regularization=None):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = Variable(data), Variable(target)
@@ -68,11 +68,11 @@ def train(epoch,nomalization=None):
         l1lambda = 0.1
         l2lambda = 0.2
   
-        if nomalization:  
+        if regularization:  
             for param in model.parameters():
-                if nomalization == 'L1':
+                if regularization == 'L1':
                     l1_regularization += torch.norm(param, 1)
-                elif nomalization == 'L2':
+                elif regularization == 'L2':
                     l2_regularization += torch.norm(param, 2)
         loss = loss + l1lambda*l1_regularization + l2lambda*l2_regularization
 
@@ -131,5 +131,5 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1',dropout=0.15)
-    config(shape=(100,100,100),classnum=5,learningrate=0.005,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=False,datapath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22/',batchnorm=False,dropout=0.1)
+    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization='L1',dropout=0.15)
+    config(shape=(100,100,100),classnum=5,learningrate=0.005,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,regularization=False,datapath=False,batchnorm=False,dropout=False)

@@ -36,24 +36,25 @@ class Net(nn.Module):
 
         x = self.l1(x)
         x = self.bn_input(x)
-        x = F.relu(x)
         x = self.dropout(x)
+        x = F.relu(x)
 
         x = self.l2(x)
         x = self.bn1(x)
-        x = F.relu(x)
         x = self.dropout(x)
+        x = F.relu(x)
 
         x = self.l3(x)
         x = self.bn2(x)
-        x = F.relu(x)
         x = self.dropout(x)
+        x = F.relu(x)
 
         x = self.l4(x)
         x = self.bn3(x)
         x = self.dropout(x) 
 
-        # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
+        # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentr
+opy
         return F.log_softmax(x, dim=1)
 
     # weight initialization

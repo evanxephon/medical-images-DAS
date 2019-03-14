@@ -33,8 +33,6 @@ def getDummy(dataset):
 
 def maketraindata(num,traindata):
     # sample to get trainset (may not be a necessity)
-    print('training with:')
-    print(traindata)
     traindataset = pd.DataFrame()
     for data in traindata:
         if num:
@@ -67,12 +65,12 @@ def config(traindata,validatedata,testdata,onehot=True):
         testdata = getDummy(testdata)
 
     # get balanced validatedata
-    validatedata = pd.DataFrame()
+    validatedatabalanced = pd.DataFrame()
     for x in range(5):
-        validatedata = validatedata.append(validatedata[validatedate['label'] == x].sample(100,replace=True))
+        validatedatabalanced = validatedatabalanced.append(validatedata[validatedata['label'] == x].sample(100,replace=True))
     
     traindata = MyDataset(traindata)
-    validatedata = MyDataset(validatedata)
+    validatedata = MyDataset(validatedatabalanced)
     testdata = MyDataset(testdata)
 
     # set the dataloader api
