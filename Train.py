@@ -21,7 +21,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'upsamplenum:{upsamplenum}')
     print(f'l1regularizationrate:{l1regularization}')
     print(f'l2regularizationrate:{l2regularization}')
-    print(f'batchnormmomentom:{batchnorm}'
+    print(f'batchnormmomentom:{batchnorm}')
     print(f'dropoutrate:{dropout}')
     print(f'cnn:{cnn}')
     print(f'path:{datapath}')
@@ -58,7 +58,7 @@ def train(epoch,l1regularization=None,l2regularization=None):
         target = target.cuda()
         
         l1_regularization, l2_regularization = torch.tensor(0), torch.tensor(0)
-        # se¶ set the former batch's gradient value zero
+        # set the former batch's gradient value zero
         optimizer.zero_grad()
         output = model(data)
         # lossfunction: cross entropy,we use NLLLoss here, Negative Log Likelihood
@@ -142,9 +142,9 @@ if __name__ == '__main__':
            validatedata='validatedata.csv',
            traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),
            epoch=100,
-           upsamplenum=False,
+           upsamplenum=100000,
            l1regularization=False,
-           l2regularization=0.01,
+           l2regularization=0.5,
            datapath=False,
            batchnorm=False,
            dropout=False)

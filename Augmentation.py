@@ -236,10 +236,29 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False,savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')
-    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)
+    #config('rawdata1sort.csv',
+            function=generate_different_areas_replace,
+            num=False,
+            testnum=100,
+            kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+                        ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                        ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                        ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                        ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
+            binary=False,
+            savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')
     
     # cross validation
     for x in range(20):
         dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
-        config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=25,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False,savepath='/data/dataaugmentationinmedicalfield/'+dirname)
+        config('rawdata1sort.csv',
+               function=generate_different_areas_replace,
+               num=False,
+               testnum=25,
+               kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+                           ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                           ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                           ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                           ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
+               binary=False,
+               savepath='/data/dataaugmentationinmedicalfield/'+dirname)
