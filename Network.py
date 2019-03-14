@@ -53,8 +53,7 @@ class Net(nn.Module):
         x = self.bn3(x)
         x = self.dropout(x) 
 
-        # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentr
-opy
+        # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
         return F.log_softmax(x, dim=1)
 
     # weight initialization

@@ -132,4 +132,4 @@ def test():
 
 if __name__ == '__main__':
     #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization='L1',dropout=0.15)
-    config(shape=(100,100,100),classnum=5,learningrate=0.005,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,regularization=False,datapath=False,batchnorm=False,dropout=False)
+    config(shape=(100,100,100),classnum=5,learningrate=0.005,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,regularization=False,datapath=False,batchnorm=False,dropout=False)
