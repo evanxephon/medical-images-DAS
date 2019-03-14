@@ -1,11 +1,12 @@
 import pandas as pd
 import random
 import threading
+from itertools import combinations
 from sklearn.utils import shuffle
 import time
 import os
 
-# 生成所有组合的数据，策略为 三个成分组合成一个训练数据
+# combine some row of data into one single row
 def generate_3X(data, type, component=3):
     output = pd.DataFrame()
     combs = combinations(data.index, component)
@@ -13,7 +14,7 @@ def generate_3X(data, type, component=3):
         tmp1 = pd.DataFrame()
         for index in comb:
             tmp2 = data.loc[index, :].drop('label', axis=0)
-            #             以下两行为了区分三种成分，但实际没有必要区分
+            #             these commented code is used for distinguish the component, but it seems not necessary
             #             for i in range(len(tmp2.columns)):
             #                 tmp2.columns[i] = str(tmp2.columns[i]) + f'c{index}'
             tmp1 = pd.concat([tmp1, tmp2], axis=0)
@@ -25,7 +26,7 @@ def generate_3X(data, type, component=3):
     return output
 
 
-# 生成指定数量的数据，策略为 三个成分组合成一个训练数据
+# it's also combine, but we set the number of generating data
 def generate_3X_withnum(data, size, type, component=3):
     output = pd.DataFrame()
     for i in range(size):
@@ -42,9 +43,9 @@ def generate_3X_withnum(data, size, type, component=3):
         output = output.append(tmp1)
     return output
 
-# 生成所有kernel替换产生的数据 策略为 选择一个固定大小的kernel，
-# 每次选择kernel位置的一小块替换成其他数据的相同部分
-# kernel也像卷积操作一样移动，我们数据看成 4（年数）* 34（区域数）的矩形
+# we use a kernal which we only focus on it's shape,
+# it is like a convolution process to some extent, but we just replace the data in the kernal by the data of another row in the same position, 
+# in these process, the data is seen as a matrix 4 years * 34 districts
 def generate_fixed_kernel(data,kernelsize=(2,28)):
     horizontalsize = 34-kernelsize[1]+1
     verticalsize = 4-kernelsize[0]+1
@@ -65,8 +66,8 @@ def generate_fixed_kernel(data,kernelsize=(2,28)):
         dataset = dataset.append(augrows) 
     return dataset
 
-# 策略为 先将34个区域的数据分成六个大的区域，再在这些小的区域上用kernel
-# 但是是将别的数据加上去
+# the strategy here is we first divide the 34 district into 6 lobes, and we use different kernal on each lobe
+# and we don't replace data this time, we add them up.
 def generate_different_areas_add(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
     for x in range(len(district)):
@@ -88,16 +89,16 @@ def generate_different_areas_add(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),
             dataset = pd.concat([dataset,augrows])
     return dataset
 
-# 策略同上，但是指定生成数量
-def generate_different_areas_add_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+# same stratege as upon, but we choose how many to generate 
+def generate_different_areas_add_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0):
     dataset = pd.DataFrame(columns=data.columns)
-    sampleset1 = list(range(200))
-    sampleset2 = list(range(200))
-    set1 = random.sample(sampleset1,40)
-    set2 = random.sample(sampleset2,40)
+    sampleset = list(range(len(data))
+    set1 = random.sample(sampleset,usedrownum)
     for i in set1:
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
+        # it may be same row we are operating, if i've got some extra time, i may fix it
+        set2 = random.sample(sampleset,usedrownum)
         for j in set2:
             for x in range(len(district)):
                 horizontalsize = district[x] - kernelsize[x][1] + 1
@@ -113,7 +114,7 @@ def generate_different_areas_add_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2
         dataset = pd.concat([dataset,augrows])
     return dataset
 
-# 策略同上上，只是add加变成了replace替换
+# same strategy as before, but replace not add again
 def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
     for x in range(len(district)):
@@ -135,16 +136,15 @@ def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2
             dataset = pd.concat([dataset,augrows])    
     return dataset
 
-# 策略同上，但指定生成数量
-def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+# same strategy, but fixed number
+def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0):
     dataset = pd.DataFrame(columns=data.columns)
-    sampleset1 = list(range(200))
-    sampleset2 = list(range(200))
-    set1 = random.sample(sampleset1,40)
-    set2 = random.sample(sampleset2,40)
+    sampleset = list(range(len(data))
+    set1 = random.sample(sampleset,usedrownum)
     for i in set1:
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
+        set2 = random.sample(sampleset,usedrownum)
         for j in set2:
             for x in range(len(district)):
                 horizontalsize = district[x] - kernelsize[x][1] + 1
@@ -160,7 +160,7 @@ def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),
         dataset = pd.concat([dataset,augrows])
     return dataset
 
-
+# muti-threading
 class outputthread(threading.Thread):
     def __init__(self,function,thetype,data,num=None,classnum='muti',kernelsize=None):
         threading.Thread.__init__(self)
@@ -174,7 +174,7 @@ class outputthread(threading.Thread):
         print('onethreadstart')
         start = time.clock()
         if self.num and self.kernelsize:
-            data = self.function(self.data,self.num,self.kernelsize)
+            data = self.function(self.data,self.kernelsize,self.num)
         elif not self.num and not self.kernelsize:
             data = self.function(self.data)
         elif not self.kernelsize and self.num:
@@ -219,7 +219,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         for x in range(len(dataset)):
             dataset[x] = shuffle(dataset[x])
                         
-    # 选择生成策略，生成数量（可选）和生成kernel的size（可选）                         
+    # choose the strategy，generate num（optional） kernel size（optional）                         
     for x in range(len(dataset)):  
         datatrain = dataset[x].iloc[:-testnum,:]
         datatest = dataset[x].iloc[-testnum:,:]
