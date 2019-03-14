@@ -5,18 +5,13 @@ from torch.autograd import Variable
 import pandas as pd
 import torch
 import Dataset
-import os 
 
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False,datapath=False):
-    # change work path and make directory
-    if datapath:
-        os.chdir(datapath)
-
-    # hypeparameters/weights initialize
-
-    print(f'shape:{shape}')
-    print(f'classnum:{classnum}')
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,nomalization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+    
+    # print the config
+    print(f'latent-layer-shape:{shape}')
+    print(f'the-num-of-classes:{classnum}')
     print(f'learningrate:{learningrate}')
     #print(f'learningrateschema:{learningrateschema}')
     print(f'testdata:{testdata}')
@@ -24,15 +19,16 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'traindata:{traindata}')
     print(f'epoch:{epoch}')
     print(f'upsamplenum:{upsamplenum}')
-    print(f'nomalization:{nomalization}')    
+    print(f'nomalization:{nomalization}')
+    print(f'cnn:{cnn}')
+    print(f'path:{datapath}')
 
     global model
     if cnn:
         model = Network.CNN(classnum)
-        print('we created a CNN')
     else: 
         model = Network.Net(shape,classnum)
-        print(f'we created a NN')
+        
     model.cuda()
     model._initialize_weights()
     
@@ -70,7 +66,7 @@ def train(epoch,nomalization=None):
         l2_regularization = 0
         
         l1lambda = 0.1
-        l2lambda = 0.1
+        l2lambda = 0.2
   
         if nomalization:  
             for param in model.parameters():
@@ -135,6 +131,5 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 if __name__ == '__main__':
-    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1')
-    config(shape=(50,50,50),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=True,datapath='/data/dataaugmentationinmedicalfield')
-    #config(shape=(100,100,100),classnum=5,learningrate=0.01,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=False,datapath='/data/dataaugmentationinmedicalfield')
+    #config(shape=(100,100,100),classnum=5,learningrate=0.001,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=100000,nomalization='L1',dropout=0.15)
+    config(shape=(100,100,100),classnum=5,learningrate=0.005,learningrateschema=optim.SGD,testdata='testdata.csv',validatedata='validatedata.csv',traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),epoch=100,upsamplenum=False,nomalization=False,cnn=False,datapath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22/',batchnorm=False,dropout=0.1)

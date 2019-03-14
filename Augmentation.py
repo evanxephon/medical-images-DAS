@@ -1,7 +1,5 @@
 import pandas as pd
 import random
-#from itertools import combinations
-#import pickle
 import threading
 from sklearn.utils import shuffle
 import time
@@ -188,15 +186,16 @@ class outputthread(threading.Thread):
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False):
-    # choose the date saving path
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False):
+    # choose the data saving path
     if savepath:
         if not os.path.isdir(savepath):
             os.mkdir(savepath)
         os.chdir(savepath)
- 
+    
     rawdata = pd.read_csv('/data/dataaugmentationinmedicalfield/'+data)
     testdata = pd.DataFrame(columns=rawdata.columns)
+    validatedata = pd.DataFrame(columns=rawdata.columns)
     
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
@@ -214,24 +213,33 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         dataset = [data0,data1,data2,data3,data4]
         testnum = testnum//5
         classnum = 'muti'
-
+        
     # cross validation
-    for x in range(len(dataset)):
-        dataset[x] = shuffle(dataset[x])                      
-    
+    if crossvalidation:
+        for x in range(len(dataset)):
+            dataset[x] = shuffle(dataset[x])
+                        
     # 选择生成策略，生成数量（可选）和生成kernel的size（可选）                         
     for x in range(len(dataset)):  
         datatrain = dataset[x].iloc[:-testnum,:]
         datatest = dataset[x].iloc[-testnum:,:]
+        
         testdata = testdata.append(datatest)
+        validatedata = validatedata.append(datatrain)
+        
     # open a thread
         thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
         thread.start()
+        
     # save the testdata
-    # testdata.to_csv(f'{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}testdata.csv',encoding=None,index=False)
-    testdata.to_csv(f'testdata',encoding=None,index=False)
+    testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+    validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False,savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11')
-    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)                
+    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False,savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')
+    #config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=100,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((4,9),(4,11),(4,4),(4,5),(4,4),(4,1))),binary=True)
     
+    # cross validation
+    for x in range(20):
+        dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
+        config('rawdata1sort.csv',generate_different_areas_replace,num=False,testnum=25,kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),binary=False,savepath='/data/dataaugmentationinmedicalfield/'+dirname)

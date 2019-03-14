@@ -66,16 +66,25 @@ def config(traindata,validatedata,testdata,onehot=True):
         validatedata = getDummy(validatedata)
         testdata = getDummy(testdata)
 
-    # set the dataloader api
-    traindata = MyDataset(traindata)
-    train_loader = torch.utils.data.DataLoader(dataset=traindata, batch_size=batch_size,shuffle=True)
+    # get balanced validatedata
+    validatedata = pd.DataFrame()
+    for x in range(5):
+        validatedata = validatedata.append(validatedata[validatedate['label'] == x].sample(100,replace=True))
     
+    traindata = MyDataset(traindata)
     validatedata = MyDataset(validatedata)
-    validate_loader = torch.utils.data.DataLoader(dataset=validatedata,batch_size=batch_size,shuffle=False)
-
     testdata = MyDataset(testdata)
-    test_loader = torch.utils.data.DataLoader(dataset=testdata,batch_size=batch_size,shuffle=False)
 
+    # set the dataloader api
+    train_loader = torch.utils.data.DataLoader(dataset=traindata,
+                                               batch_size=batch_size,
+                                               shuffle=True)
+    validate_loader = torch.utils.data.DataLoader(dataset=validatedata,
+                                               batch_size=batch_size,
+                                               shuffle=False)
+    test_loader = torch.utils.data.DataLoader(dataset=testdata,
+                                              batch_size=batch_size,
+                                              shuffle=False)
     return train_loader,validate_loader,test_loader
 
 def getloader(upsamplenum,traindata,validatedata,testdata):
