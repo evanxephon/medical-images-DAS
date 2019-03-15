@@ -71,7 +71,7 @@ def train(epoch,l1regularization=None,l2regularization=None):
         l1lambda = l1regularization
         l2lambda = l2regularization
   
-        if l1regularization and l2regularization:  
+        if l1regularization or l2regularization:  
             for param in model.parameters():
                 if l1regularization:
                     l1_regularization += torch.norm(param, 1)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
            epoch=100,
            upsamplenum=100000,
            l1regularization=False,
-           l2regularization=0.5,
+           l2regularization=0.08375,
            datapath=False,
            batchnorm=False,
            dropout=False)
