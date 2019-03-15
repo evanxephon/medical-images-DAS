@@ -165,21 +165,21 @@ def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),
 def generate_different_areas_replace_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
                      
-    if data.loc[0;'label'] == 0:
+    if data.iloc[0;-1] == 0:
         combs = combinations(range(6),1)
-    elif data.loc[0;'label'] == 1:
+    elif data.iloc[0;-1] == 1:
         combs = combinations(range(6),3)
-    elif data.loc[0;'label'] == 2:
+    elif data.iloc[0;-1] == 2:
         combs = combinations(range(6),3)
-    elif data.loc[0;'label'] == 3:
+    elif data.iloc[0;-1] == 3:
         combs = combinations(range(6),3)
-    elif data.loc[0;'label'] == 4:
+    elif data.iloc[0;-1] == 4:
         combs = combinations(range(6),2)
                      
     for i in range(len(data)):
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
-        for j in range(len(data)):
+        foa j in range(len(data)):
             if j != i:
                     for comb in combs:
                         horizontalsize = district[comb[0]] - kernelsize[comb[0]][1] + 1
@@ -283,6 +283,12 @@ if __name__ == '__main__':
                         ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             binary=False,
             savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')
+    config('rawdata1sort.csv',
+           function=generate_different_areas_replace_combinations_for_different_type,
+           num=False,
+           testnum=100,
+           binary=False,
+           savepath='/data/dataaugmentationinmedicalfield/kernal_comb')
     
     # cross validation
     for x in range(20):
