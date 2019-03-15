@@ -166,34 +166,34 @@ def generate_different_areas_replace_combinations_for_different_type(data,kernel
     dataset = pd.DataFrame(columns=data.columns)
                      
     if data.iloc[0,-1] == 0:
-        combs = combinations(range(6),1)
+        combs = list(combinations(range(6),1))
     elif data.iloc[0,-1] == 1:
-        combs = combinations(range(6),3)
+        combs = list(combinations(range(6),3))
     elif data.iloc[0,-1] == 2:
-        combs = combinations(range(6),3)
+        combs = list(combinations(range(6),3))
     elif data.iloc[0,-1] == 3:
-        combs = combinations(range(6),3)
+        combs = list(combinations(range(6),3))
     elif data.iloc[0,-1] == 4:
-        combs = combinations(range(6),2)
+        combs = list(combinations(range(6),2))
                      
     for i in range(len(data)):
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
         for j in range(len(data)):
             if j != i:
-                    for comb in combs:
-                        horizontalsize = district[comb[0]] - kernelsize[comb[0]][1] + 1
-                        verticalsize = 4 - kernelsize[comb[0]][0] + 1
-                        for k in range(horizontalsize):
-                            for l in range(verticalsize):
-                                for x in comb:
-                                    for m in range(kernelsize[x][1]):
-                                        a = (sum(district[:x])+m+k)*4 + l
-                                        b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                                        thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
-                                augrows = augrows.append(thechosenrow)
-                                thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-                    dataset = pd.concat([dataset,augrows])    
+                for comb in combs:
+                    horizontalsize = district[comb[0]] - kernelsize[comb[0]][1] + 1
+                    verticalsize = 4 - kernelsize[comb[0]][0] + 1
+                    for k in range(horizontalsize):
+                        for l in range(verticalsize):
+                            for x in comb:
+                                for m in range(kernelsize[x][1]):
+                                    a = (sum(district[:x])+m+k)*4 + l
+                                    b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
+                                    thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                            augrows = augrows.append(thechosenrow)
+                            thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        dataset = dataset.append(augrows)    
     return dataset
                      
 # muti-threading
@@ -255,7 +255,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         for x in range(len(dataset)):
             dataset[x] = shuffle(dataset[x])
                         
-    # choose the strategy，generate num（optional） kernel size（optional）                         
+    # choose the strategy generate num(optional) kernel size(optional)                        
     for x in range(len(dataset)):  
         datatrain = dataset[x].iloc[:-testnum,:]
         datatest = dataset[x].iloc[-testnum:,:]
