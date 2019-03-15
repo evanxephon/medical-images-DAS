@@ -92,7 +92,7 @@ def generate_different_areas_add(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),
 # same stratege as upon, but we choose how many to generate 
 def generate_different_areas_add_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0):
     dataset = pd.DataFrame(columns=data.columns)
-    sampleset = list(range(len(data))
+    sampleset = list(range(len(data)))
     set1 = random.sample(sampleset,usedrownum)
     for i in set1:
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -139,7 +139,7 @@ def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2
 # same strategy, but fixed number
 def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0):
     dataset = pd.DataFrame(columns=data.columns)
-    sampleset = list(range(len(data))
+    sampleset = list(range(len(data)))
     set1 = random.sample(sampleset,usedrownum)
     for i in set1:
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
@@ -165,21 +165,21 @@ def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),
 def generate_different_areas_replace_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1)):
     dataset = pd.DataFrame(columns=data.columns)
                      
-    if data.iloc[0;-1] == 0:
+    if data.iloc[0,-1] == 0:
         combs = combinations(range(6),1)
-    elif data.iloc[0;-1] == 1:
+    elif data.iloc[0,-1] == 1:
         combs = combinations(range(6),3)
-    elif data.iloc[0;-1] == 2:
+    elif data.iloc[0,-1] == 2:
         combs = combinations(range(6),3)
-    elif data.iloc[0;-1] == 3:
+    elif data.iloc[0,-1] == 3:
         combs = combinations(range(6),3)
-    elif data.iloc[0;-1] == 4:
+    elif data.iloc[0,-1] == 4:
         combs = combinations(range(6),2)
                      
     for i in range(len(data)):
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
-        foa j in range(len(data)):
+        for j in range(len(data)):
             if j != i:
                     for comb in combs:
                         horizontalsize = district[comb[0]] - kernelsize[comb[0]][1] + 1
@@ -264,7 +264,10 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         validatedata = validatedata.append(datatrain)
         
     # open a thread
-        thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
+        if kernelsize:
+            thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
+        else:
+            thread = outputthread(function,x,datatrain,num,classnum=classnum)
         thread.start()
         
     # save the testdata
@@ -272,7 +275,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    #config('rawdata1sort.csv',
+    '''config('rawdata1sort.csv',
             function=generate_different_areas_replace,
             num=False,
             testnum=100,
@@ -282,7 +285,8 @@ if __name__ == '__main__':
                         ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
                         ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             binary=False,
-            savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')
+            savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')'''
+
     config('rawdata1sort.csv',
            function=generate_different_areas_replace_combinations_for_different_type,
            num=False,
@@ -291,7 +295,7 @@ if __name__ == '__main__':
            savepath='/data/dataaugmentationinmedicalfield/kernal_comb')
     
     # cross validation
-    for x in range(20):
+    '''for x in range(20):
         dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
         config('rawdata1sort.csv',
                function=generate_different_areas_replace,
@@ -303,4 +307,4 @@ if __name__ == '__main__':
                            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
                            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
                binary=False,
-               savepath='/data/dataaugmentationinmedicalfield/'+dirname)
+               savepath='/data/dataaugmentationinmedicalfield/'+dirname)'''
