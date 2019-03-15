@@ -10,7 +10,7 @@ import os
 def generate_3X(data, type, component=3):
     output = pd.DataFrame()
     combs = combinations(data.index, component)
-    for comb in list(combs):
+    for comb in combs:
         tmp1 = pd.DataFrame()
         for index in comb:
             tmp2 = data.loc[index, :].drop('label', axis=0)
@@ -160,6 +160,42 @@ def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),
         dataset = pd.concat([dataset,augrows])
     return dataset
 
+# use six fixed kernal to each lobe, but when it come to the type which has very few orginal data, we replace several lobe's data, not
+# one, and we calculate the combinations first.
+def generate_different_areas_replace_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1)):
+    dataset = pd.DataFrame(columns=data.columns)
+                     
+    if data.loc[0;'label'] == 0:
+        combs = combinations(range(6),1)
+    elif data.loc[0;'label'] == 1:
+        combs = combinations(range(6),3)
+    elif data.loc[0;'label'] == 2:
+        combs = combinations(range(6),3)
+    elif data.loc[0;'label'] == 3:
+        combs = combinations(range(6),3)
+    elif data.loc[0;'label'] == 4:
+        combs = combinations(range(6),2)
+                     
+    for i in range(len(data)):
+        thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+        augrows = pd.DataFrame(columns=data.columns)
+        for j in range(len(data)):
+            if j != i:
+                    for comb in combs:
+                        horizontalsize = district[comb[0]] - kernelsize[comb[0]][1] + 1
+                        verticalsize = 4 - kernelsize[comb[0]][0] + 1
+                        for k in range(horizontalsize):
+                            for l in range(verticalsize):
+                                for x in comb:
+                                    for m in range(kernelsize[x][1]):
+                                        a = (sum(district[:x])+m+k)*4 + l
+                                        b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
+                                        thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                                augrows = augrows.append(thechosenrow)
+                                thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+                    dataset = pd.concat([dataset,augrows])    
+    return dataset
+                     
 # muti-threading
 class outputthread(threading.Thread):
     def __init__(self,function,thetype,data,num=None,classnum='muti',kernelsize=None):
