@@ -222,7 +222,7 @@ class outputthread(threading.Thread):
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False):
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False,thread=False):
     # choose the data saving path
     if savepath:
         if not os.path.isdir(savepath):
@@ -264,11 +264,22 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         validatedata = validatedata.append(datatrain)
         
     # open a thread
-        if kernelsize:
-            thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
+        if thread:
+            if kernelsize:
+                thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
+            else:
+                thread = outputthread(function,x,datatrain,num,classnum=classnum)
+            thread.start()
         else:
-            thread = outputthread(function,x,datatrain,num,classnum=classnum)
-        thread.start()
+            if num and kernelsize:
+                data = function(datatrain,kernelsize[x],num)
+            elif not num and not kernelsize:
+                data = function(datatrain)
+            elif not kernelsize and num:
+                data = function(datatrain,num)
+            elif kernelsize and not num:
+                data = function(datatrain,kernelsize[x])
+            data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
         
     # save the testdata
     testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
@@ -287,15 +298,15 @@ if __name__ == '__main__':
             binary=False,
             savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')'''
 
-    config('rawdata1sort.csv',
+    '''config('rawdata1sort.csv',
            function=generate_different_areas_replace_combinations_for_different_type,
            num=False,
            testnum=100,
            binary=False,
-           savepath='/data/dataaugmentationinmedicalfield/kernal_comb')
+           savepath='/data/dataaugmentationinmedicalfield/kernal_comb')'''
     
     # cross validation
-    '''for x in range(20):
+    for x in range(20):
         dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
         config('rawdata1sort.csv',
                function=generate_different_areas_replace,
@@ -307,4 +318,6 @@ if __name__ == '__main__':
                            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
                            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
                binary=False,
-               savepath='/data/dataaugmentationinmedicalfield/'+dirname)'''
+               savepath='/data/dataaugmentationinmedicalfield/'+dirname,
+               crossvalidation=True,
+               thread=False)

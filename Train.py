@@ -28,9 +28,9 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
 
     global model
     if cnn:
-        model = Network.CNN(classnum)
+        model = Network.CNN(classnum,batchnorm=batchnorm,dropout=dropout)
     else: 
-        model = Network.Net(shape,classnum)
+        model = Network.Net(shape,classnum,batchnorm=batchnorm,dropout=dropout)
         
     model.cuda()
     model._initialize_weights()
@@ -142,9 +142,9 @@ if __name__ == '__main__':
            validatedata='validatedata.csv',
            traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),
            epoch=100,
-           upsamplenum=100000,
+           upsamplenum=False,
            l1regularization=False,
-           l2regularization=0.08375,
-           datapath=False,
+           l2regularization=False,
+           datapath='/data/dataaugmentationinmedicalfield/kernal_comb/',
            batchnorm=False,
            dropout=False)
