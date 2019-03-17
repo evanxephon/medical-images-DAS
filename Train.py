@@ -44,11 +44,16 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     global test_loader
     global validate_loader 
     train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
-   
+    
+    accuracy = []
+ 
     for i in range(epoch):
         train(i,l1regularization=l1regularization,l2regularization=l2regularization)
         validate()
-        test()
+        accuracy.append(test())
+    
+    accuracy = pd.DataFrame(accuaracy).T
+    print(accuracy.describe())
          
 def train(epoch,l1regularization=None,l2regularization=None):
     model.train()
@@ -132,6 +137,7 @@ def test():
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+    return correct//len(test_loader.dataset)
 
 if __name__ == '__main__':
     config(shape=(100,100,100),
@@ -142,9 +148,10 @@ if __name__ == '__main__':
            validatedata='validatedata.csv',
            traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),
            epoch=100,
-           upsamplenum=False,
+           upsamplenum=200000,
            l1regularization=False,
-           l2regularization=False,
-           datapath='/data/dataaugmentationinmedicalfield/kernal_comb/',
-           batchnorm=False,
+           l2regularization=0.08,
+           cnn = False,
+           datapath='/data/dataaugmentationinmedicalfield/',
+           batchnorm=0.1,
            dropout=False)
