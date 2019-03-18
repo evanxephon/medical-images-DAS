@@ -31,7 +31,7 @@ def getDummy(dataset):
     dataset = pd.get_dummies(dataset)
     return dataset
 
-def maketraindata(samplenum,sampletype,traindata,sampletype=False):
+def maketraindata(samplenum=None,sampletype=False,traindata=()):
     # sample to get trainset (may not be a necessity)
     traindataset = pd.DataFrame()
     for x in range(len(traindata)):
