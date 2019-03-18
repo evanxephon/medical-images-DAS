@@ -5,15 +5,16 @@ from torch.autograd import Variable
 import pandas as pd
 import torch
 import Dataset
+import os
 
-
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # print the config
     print(f'latent-layer-shape:{shape}')
     print(f'the-num-of-classes:{classnum}')
     print(f'learningrate:{learningrate}')
     #print(f'learningrateschema:{learningrateschema}')
+    print(f'batchsize:{batchsize}')
     print(f'testdata:{testdata}')
     print(f'validatedata:{validatedata}')
     print(f'traindata:{traindata}')
@@ -43,7 +44,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     global train_loader
     global test_loader
     global validate_loader 
-    train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,traindata,validatedata,testdata)
+    train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,batchsize,traindata,validatedata,testdata,datapath)
     
     accuracy = []
  
@@ -144,14 +145,15 @@ if __name__ == '__main__':
            classnum=5,
            learningrate=0.001,
            learningrateschema=optim.SGD,
-           testdata='testdata.csv',
-           validatedata='validatedata.csv',
-           traindata=('0.csv','1.csv','2.csv','3.csv','4.csv'),
+           batchsize=64,
+           testdata='testdata-muti.csv',
+           validatedata='validatedata-muti.csv',
+           traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
            epoch=100,
-           upsamplenum=200000,
+           upsamplenum=False,
            l1regularization=False,
-           l2regularization=0.08,
+           l2regularization=False,
            cnn = False,
-           datapath='/data/dataaugmentationinmedicalfield/',
+           datapath='/data/dataaugmentationinmedicalfield/crossvalidation-batch-1-0/',
            batchnorm=0.1,
            dropout=False)

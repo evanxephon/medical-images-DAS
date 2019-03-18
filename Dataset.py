@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import torch.utils.data
 from sklearn.utils import shuffle
-
+import os
 
 # inherit from torch.utils.data.Dataset to realize myown dataset class
 class MyDataset(torch.utils.data.Dataset):
@@ -52,10 +52,10 @@ def fillnan(data):
 def upsample(data,num):
     return data.loc[np.random.choice(data.index,size=num, replace=True),:]
 
-def config(traindata,validatedata,testdata,onehot=True):
+def config(batchsize,traindata,validatedata,testdata,onehot=True):
 
     # set the batchsize and the other things
-    batch_size = 64
+    batch_size = batchsize
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
     # onehot
@@ -85,8 +85,10 @@ def config(traindata,validatedata,testdata,onehot=True):
                                               shuffle=False)
     return train_loader,validate_loader,test_loader
 
-def getloader(upsamplenum,traindata,validatedata,testdata):
+def getloader(upsamplenum,,batchsize,traindata,validatedata,testdata,datapath=False):
+    if datapath:
+        os.chdir(datapath)    
     traindata = maketraindata(upsamplenum,traindata)
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
-    return config(traindata,validatedata,testdata,onehot=False)
+    return config(batchsize,traindata,validatedata,testdata,onehot=False)
