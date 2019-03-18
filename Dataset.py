@@ -31,14 +31,17 @@ def getDummy(dataset):
     dataset = pd.get_dummies(dataset)
     return dataset
 
-def maketraindata(num,traindata):
+def maketraindata(samplenum,sampletype,traindata,sampletype=False):
     # sample to get trainset (may not be a necessity)
     traindataset = pd.DataFrame()
-    for data in traindata:
-        if num:
-            traindatax = pd.read_csv(data).sample(num,replace=True)
-        else:
-            traindatax = pd.read_csv(data)
+    for x in range(len(traindata)):
+        traindatax = pd.read_csv(traindata[x])
+        if sampletype == 'up':
+            traindatax = upsample(traindatax,samplenum)
+        elif sampletype == 'down':
+            traindatax = downsample(traindatax,samplenum) 
+
+        print(f'type{x} has {len(traindatax)} data')
         traindataset = traindataset.append(traindatax) 
     return  traindataset
 
@@ -50,7 +53,10 @@ def fillnan(data):
     return data
 
 def upsample(data,num):
-    return data.loc[np.random.choice(data.index,size=num, replace=True),:]
+    return data.sample(num,replace=True)
+
+def downsample(data,num):
+    return data.loc[np.random.choice(data.index,size=num),:]
 
 def config(batchsize,traindata,validatedata,testdata,onehot=True):
 
@@ -85,10 +91,10 @@ def config(batchsize,traindata,validatedata,testdata,onehot=True):
                                               shuffle=False)
     return train_loader,validate_loader,test_loader
 
-def getloader(upsamplenum,,batchsize,traindata,validatedata,testdata,datapath=False):
+def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,datapath=False):
     if datapath:
         os.chdir(datapath)    
-    traindata = maketraindata(upsamplenum,traindata)
+    traindata = maketraindata(samplenum,sampletype,traindata)
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
     return config(batchsize,traindata,validatedata,testdata,onehot=False)

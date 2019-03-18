@@ -7,7 +7,7 @@ import torch
 import Dataset
 import os
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,upsamplenum=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # print the config
     print(f'latent-layer-shape:{shape}')
@@ -19,13 +19,15 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     print(f'validatedata:{validatedata}')
     print(f'traindata:{traindata}')
     print(f'epoch:{epoch}')
-    print(f'upsamplenum:{upsamplenum}')
+    print(f'samplenum:{samplenum}')
+    print(f'sampletype:{sampletype}')
     print(f'l1regularizationrate:{l1regularization}')
     print(f'l2regularizationrate:{l2regularization}')
     print(f'batchnormmomentom:{batchnorm}')
     print(f'dropoutrate:{dropout}')
     print(f'cnn:{cnn}')
     print(f'path:{datapath}')
+       
 
     global model
     if cnn:
@@ -44,7 +46,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     global train_loader
     global test_loader
     global validate_loader 
-    train_loader, validate_loader, test_loader = Dataset.getloader(upsamplenum,batchsize,traindata,validatedata,testdata,datapath)
+    train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,datapath)
     
     accuracy = []
  
@@ -53,7 +55,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
         validate()
         accuracy.append(test())
     
-    accuracy = pd.DataFrame(accuaracy).T
+    accuracy = pd.DataFrame(accuracy).T
     print(accuracy.describe())
          
 def train(epoch,l1regularization=None,l2regularization=None):
@@ -145,15 +147,16 @@ if __name__ == '__main__':
            classnum=5,
            learningrate=0.001,
            learningrateschema=optim.SGD,
-           batchsize=64,
+           batchsize=128,
            testdata='testdata-muti.csv',
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
            epoch=100,
-           upsamplenum=False,
+           samplenum=16000,
+           sampletype=downsample,
            l1regularization=False,
            l2regularization=False,
            cnn = False,
-           datapath='/data/dataaugmentationinmedicalfield/crossvalidation-batch-1-0/',
+           datapath='/data/dataaugmentationinmedicalfield/kernal_comb/',
            batchnorm=0.1,
            dropout=False)
