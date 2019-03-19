@@ -70,7 +70,7 @@ We are applying Random Forest algorithm to our original data to make sure that a
 ### Modules.py & Utils.py
 对现有网络实现深度泰勒分解和相关度指数的两个基础库程序，以获得对输入矩阵中单个元素对最终预测结果的影响程度大小，进而实现对分类器的解释。  
 
-The fundamental function library of generating a heatmap of input matrix (which could be an interpretation of our prediciton), applying the algorithms of deep taylor decomposition and layer wise relevance propagation. 
+The fundamental function library of generating a heatmap of input matrix (which could be an interpretation of our prediciton), applying the algorithms of deep taylor decomposition or layer-wise relevance propagation. 
 
 ## Challenges and Solutions So Far
 ### Imbalanced Data
@@ -86,7 +86,10 @@ We will split our original data to make the test data set to be well balanced, t
 我们可以生成足够多的数据来训练，并通过观察分类器在测试集之上的效果来判断我们的策略是否有效。但是，存在一个问题：测试集的数据数量很少。我们将原始数据分成训练集的种子（用来生成训练集）和测试集。测试集的数量只有100个，与此同时我们用来训练的数据经过生成后会达到百万级别。仅仅通过在100个数据的表现，来证明我们策略有效，其中存在很大的随机性，是非常没有说服力。同时我们是不能对测试数据进行生成的操作，不然就有一丝‘循环论证’的意味了——先假定我们的策略就能生成完美的真实数据，然后再去证明它。  
 解决测试数据少的问题，我们可以采取交叉验证。有多种交叉验证的方法，如K折交叉验证，留一交叉验证和留P交叉验证等等。它们主要的思想就是使用多次不同划分的训练和测试集来训练。验证集一般是用来评估模型预测的好坏和选择模型及其对应的参数。但是在我们的情况，我认为采用交叉验证的方法可以减少我们测试集过少带来的随机性的影响。 
 因为算力的原因，只能采用K折交叉验证，但是目前并不急着去实现代码和训练，因为需要先得到高的准确率，才需要考虑我们的结果的说服力。
-目前已经在使用交叉验证来充分利用数据，让每一个数据都可以被用到训练之中。
+目前已经在使用交叉验证来充分利用数据，让每一个数据都可以被用到训练之中。  
+
+We use K-fold cross validation to avoid the overfit of the trainning process and also to increase the usage of the original data which is a rather small set.
+
 ### Overfitting
 截至目前，我得到的五分类器的最好准确率为30%，但同时分类器在训练集之上的准确率能达到80%。这明显是有过拟合的问题。
 应对过拟合最根本的解决方法即加大训练数据的量。但是在我们在做的已经是生成训练数据了，在达到生成数据的数量瓶颈后。现在能做的是改变网络结构或者在之上应用一些常见的减轻过拟合的Tricks。
