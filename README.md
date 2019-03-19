@@ -62,11 +62,15 @@ Update: 加入卷积后并未得到更好的准确率，同时对非图像数据
 ### Train.py
 这是我们进行训练的主程序，我们可以在训练时调整各种超参数和设置。
 
-
 ### RandomForest.py
 使用随机森林对原始数据进行了训练，因为随机森林是一种十分适合数据量很少的情况下的机器学习算法。使用随机森林，我们能确保自己没有跑偏，得到连训练原始数据都不如的结果。
 
 We are applying Random Forest algorithm to our original data to make sure that augmentation strategy would not bring us an even worse accuracy than the uninflated set.
+
+### Module.py & Utils.py
+对现有网络实现深度泰勒分解和相关度指数的两个基础库程序，以获得对输入矩阵中单个元素对最终预测结果的影响程度大小，进而实现对分类器的解释。  
+
+The fundamental function library of generating a heatmap of input matrix (which could be an interpretation of our prediciton), applying the algorithms of deep taylor decomposition and layer wise relevance propagation. 
 
 ## Challenges and Solutions So Far
 ### Imbalanced Data
