@@ -88,11 +88,14 @@ We will split our original data to make the test data set to be well balanced, t
 因为算力的原因，只能采用K折交叉验证，但是目前并不急着去实现代码和训练，因为需要先得到高的准确率，才需要考虑我们的结果的说服力。
 目前已经在使用交叉验证来充分利用数据，让每一个数据都可以被用到训练之中。  
 
-We use K-fold cross validation to avoid the overfit of the trainning process and also to increase the usage of the original data which is a rather small set.
+We use K-fold cross validation to avoid the overfitting problem of the trainning process and also to increase the usage of the original data which is a rather small set.
 
 ### Overfitting
 截至目前，我得到的五分类器的最好准确率为30%，但同时分类器在训练集之上的准确率能达到80%。这明显是有过拟合的问题。
-应对过拟合最根本的解决方法即加大训练数据的量。但是在我们在做的已经是生成训练数据了，在达到生成数据的数量瓶颈后。现在能做的是改变网络结构或者在之上应用一些常见的减轻过拟合的Tricks。
+应对过拟合最根本的解决方法即加大训练数据的量。但是在我们在做的已经是生成训练数据了，在达到生成数据的数量瓶颈后。现在能做的是改变网络结构或者在之上应用一些常见的减轻过拟合的Tricks。  
+
+
+
 #### Regularization
 L1正则化被证明不适合，本身即是用来得到稀疏的权值的一种做法。我们使用后发现会大大影响在训练集上的准确率。  
 L2正则化有一定效果，虽然没有得到超过30%的准确率，但是使用后确实提高了分类器在测试集之上的准确率。
