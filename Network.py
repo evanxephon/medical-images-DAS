@@ -5,12 +5,12 @@ import torch.nn.init
 
 class Net(nn.Module):
     #layers is array that contain 3 element,they are l1,l2,l3's input size,l4's output size is 5 (5 types)
-    def __init__(self,layers=[100,100,100],type=5,component=1,batchnorm=False,dropout=False):
+    def __init__(self,layers=[100,100,100],classnum=5,component=1,batchnorm=False,dropout=False):
         super(Net, self).__init__()
         # the input size districts 34 *years 4 + 5(extra features after onehotilized)
 
+        layers.append(classnum)
         self.layers = layers
-        layers.append(type)
  
         if dropout:
             self.dropout = nn.Dropout(p=dropout)
@@ -21,11 +21,9 @@ class Net(nn.Module):
 
         for x in range(len(layers)):
             outputd = layers[x]
-            print(f'outputd:{outputd}')
-            print(f'inputd:{inputd}')
             exec(f'self.l{x} = nn.Linear({inputd},{outputd})')
             if batchnorm:
-                exec(f'self.bn{x} = nn.BatchNorm1d({outputd},momentum=batchnorm)')
+                exec(f'self.bn{x} = nn.BatchNorm1d({outputd},momentum={batchnorm})')
             else:
                 exec(f'self.bn{x} = lambda x: x')
             inputd = outputd
