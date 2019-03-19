@@ -4,57 +4,43 @@ import torch.nn.init
 
 
 class Net(nn.Module):
-    #layers is array that contain 3 element，they are l1，l2，l3's input size，l4's output size is 5 (5 types)
-    def __init__(self,layers,type=5,component=1,batchnorm=False,dropout=False):
+    #layers is array that contain 3 element,they are l1,l2,l3's input size,l4's output size is 5 (5 types)
+    def __init__(self,layers=[100,100,100],type=5,component=1,batchnorm=False,dropout=False):
         super(Net, self).__init__()
         # the input size districts 34 *years 4 + 5(extra features after onehotilized)
-        if batchnorm:
-            self.bn_input = nn.BatchNorm1d(100, momentum=batchnorm)
-            self.bn1 = nn.BatchNorm1d(100, momentum=batchnorm)
-            self.bn2 = nn.BatchNorm1d(100, momentum=batchnorm)
-            self.bn3 = nn.BatchNorm1d(5, momentum=batchnorm)
-        else:
-            self.bn_input = lambda x: x
-            self.bn1 = lambda x: x
-            self.bn2 = lambda x: x
-            self.bn3 = lambda x: x
-        
+
+        self.layers = layers
+        layers.append(type)
+ 
         if dropout:
             self.dropout = nn.Dropout(p=dropout)
         else:
             self.dropout = lambda x: x 
 
-        self.l1 = nn.Linear(34*4*component, layers[0])
+        inputd = 136
 
-        self.l2 = nn.Linear(layers[0], layers[1]) # layers[0]:l1's input size
-
-        self.l3 = nn.Linear(layers[1], layers[2]) # layers[1]:l2's input size
-
-        self.l4 = nn.Linear(layers[2], type) # layer[2]:l3's input size
-
-    def forward(self, x):
-
-        x = self.l1(x)
-        x = self.bn_input(x)
-        x = self.dropout(x)
-        x = F.relu(x)
-
-        x = self.l2(x)
-        x = self.bn1(x)
-        x = self.dropout(x)
-        x = F.relu(x)
-
-        x = self.l3(x)
-        x = self.bn2(x)
-        x = self.dropout(x)
-        x = F.relu(x)
-
-        x = self.l4(x)
-        x = self.bn3(x)
-        x = self.dropout(x) 
+        for x in range(len(layers)):
+            outputd = layers[x]
+            print(f'outputd:{outputd}')
+            print(f'inputd:{inputd}')
+            exec(f'self.l{x} = nn.Linear({inputd},{outputd})')
+            if batchnorm:
+                exec(f'self.bn{x} = nn.BatchNorm1d({outputd},momentum=batchnorm)')
+            else:
+                exec(f'self.bn{x} = lambda x: x')
+            inputd = outputd
+            
+    def forward(self,data):
+        
+        for x in range(len(self.layers)):
+            exec(f'data = self.l{x}(data)')
+            exec(f'data = self.bn{x}(data)')
+            exec(f'data = self.dropout(data)')
+            if x != (len(self.layers)-1):
+                data = F.relu(data)
 
         # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
-        return F.log_softmax(x, dim=1)
+        return F.log_softmax(data)
 
     # weight initialization
     def _initialize_weights(self):
@@ -70,7 +56,7 @@ class Net(nn.Module):
 
 
 class CNN(nn.Module):
-    def __init__(self,type):
+    def __init__(self,type,batchnorm=False,dropout=False):
         super(CNN, self,).__init__()
         self.conv1 = nn.Sequential( #input shape (1,34,4)
             nn.Conv2d(in_channels=1,
@@ -80,7 +66,7 @@ class CNN(nn.Module):
                       padding=0
                       ),
             #nn.Dropout(0.5), 
-            nn.BatchNorm2d(1, momentum=0.5),
+            nn.BatchNorm2d(1, momentum=0.1),
             nn.ReLU(),
             #nn.MaxPool2d(kernel_size=2)
 
@@ -90,11 +76,20 @@ class CNN(nn.Module):
                                   nn.ReLU(),
                                   #nn.MaxPool2d(2)
         )'''
+        if batchnorm:
+            self.bn2 = nn.BatchNorm1d(100, momentum=batchnorm)
+            self.bn3 = nn.BatchNorm1d(type, momentum=batchnorm)
+        else:
+            self.bn2 = lambda x: x
+            self.bn3 = lambda x: x
+        if dropout:
+            self.dropout = nn.dropout(dropout)
+        else:
+            self.dropout = lambda x: x
+             
         self.l3 = nn.Linear(1*33*3,100)
-        self.bn2 = nn.BatchNorm1d(100, momentum=0.5)
 
         self.l4 = nn.Linear(100,type)
-        self.bn3 = nn.BatchNorm1d(type, momentum=0.5)
         
     def forward(self, x):
         #print(f'shapebefore:{x.shape}')
@@ -112,9 +107,12 @@ class CNN(nn.Module):
 
         x = self.l3(x)
         x = self.bn2(x)
+        x = self.dropout(x)
+        x = F.relu(x)
 
         x = self.l4(x)
         x = self.bn3(x)
+        x = self.dropout(x)
         
         return F.log_softmax(x, dim=1)
     
