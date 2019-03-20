@@ -23,12 +23,15 @@ class Net(nn.Module):
 
         for i in range(len(layers)):
             outputd = layers[i]
-            self.fcl = nn.Linear(inputd,outputd)
-            self.fc.append(self.fcl)
+            fcl = nn.Linear(inputd,outputd)
+            
+            setattr(self,f'fc{i}',fcl)
+            self.fc.append(fcl)
             if batchnorm:
-                self.bnl = nn.BatchNorm1d(outputd,momentum=batchnorm,track_running_stats=True)
+                bnl = nn.BatchNorm1d(outputd,momentum=batchnorm,track_running_stats=True)
             else:
-                exec(self.bnl = lambda x: x)
+                bnl = lambda x: x
+            setattr(self,f'bn{i}',bnl) 
             self.bn.append(bnl)
             inputd = outputd
             
