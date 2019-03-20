@@ -7,7 +7,7 @@ import torch
 import Dataset
 import os
 
-def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # print the config
     print(f'latent-layer-shape:{shape}')
@@ -53,7 +53,7 @@ def config(shape=(100,100,100),classnum=2,learningrate=0.01,learningrateschema=o
     for i in range(epoch):
         train(i,l1regularization=l1regularization,l2regularization=l2regularization)
         validate()
-        accuracy.append(test())
+        accuracy.append(test().numpy())
     
     accuracy = pd.DataFrame(accuracy).T
     print(accuracy.describe())
@@ -153,7 +153,7 @@ if __name__ == '__main__':
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
            epoch=100,
            samplenum=16000,
-           sampletype=downsample,
+           sampletype='down',
            l1regularization=False,
            l2regularization=False,
            cnn = False,
