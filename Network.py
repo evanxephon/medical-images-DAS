@@ -5,57 +5,80 @@ import torch.nn.init
 
 class Net(nn.Module):
     #layers is array that contain 3 element，they are l1，l2，l3's input size，l4's output size is 5 (5 types)
-    def __init__(self,layers,type=5,component=1,batchnorm=False,dropout=False):
+    def __init__(self,layers=[],classnum=5,component=1,batchnorm=False,dropout=False):
         super(Net, self).__init__()
         # the input size districts 34 *years 4 + 5(extra features after onehotilized)
-        if batchnorm:
-            self.bn_input = nn.BatchNorm1d(100, momentum=batchnorm)
-            self.bn1 = nn.BatchNorm1d(100, momentum=batchnorm)
-            self.bn2 = nn.BatchNorm1d(100, momentum=batchnorm)
-            self.bn3 = nn.BatchNorm1d(5, momentum=batchnorm)
-        else:
-            self.bn_input = lambda x: x
-            self.bn1 = lambda x: x
-            self.bn2 = lambda x: x
-            self.bn3 = lambda x: x
+        
+        self.relevance_score_output_layer = None
+        self.tensor_of_each_layer = []
+        
+        layers.append(classnum)
+        self.layers = layers
         
         if dropout:
             self.dropout = nn.Dropout(p=dropout)
         else:
             self.dropout = lambda x: x 
 
-        self.l1 = nn.Linear(34*4*component, layers[0])
+        inputd = 34 * 4
+        self.fc = []
+        self.bn = []
 
-        self.l2 = nn.Linear(layers[0], layers[1]) # layers[0]:l1's input size
+        for i in range(len(layers)):
+            outputd = layers[i]
+            fcl = nn.Linear(inputd,outputd)
 
-        self.l3 = nn.Linear(layers[1], layers[2]) # layers[1]:l2's input size
+            setattr(self,f'fc{i}',fcl)
+            self.fc.append(fcl)
+            if batchnorm:
+                bnl = nn.BatchNorm1d(outputd,momentum=batchnorm,track_running_stats=True)
+            else:
+                bnl = lambda x: x
+            setattr(self,f'bn{i}',bnl)
+            self.bn.append(bnl)
+            inputd = outputd
 
-        self.l4 = nn.Linear(layers[2], type) # layer[2]:l3's input size
-
-    def forward(self, x):
-
-        x = self.l1(x)
-        x = self.bn_input(x)
-        x = self.dropout(x)
-        x = F.relu(x)
-
-        x = self.l2(x)
-        x = self.bn1(x)
-        x = self.dropout(x)
-        x = F.relu(x)
-
-        x = self.l3(x)
-        x = self.bn2(x)
-        x = self.dropout(x)
-        x = F.relu(x)
-
-        x = self.l4(x)
-        x = self.bn3(x)
-        x = self.dropout(x) 
-
+    def forward(self, x, test=False):
+        
+        for i in range(len(self.layers)):
+            if test:
+                self.tensorofeachlayer.append(x.view(-1))
+            x = self.fc[i](x)
+            x = self.bn[i](x)
+            x = self.dropout(x)
+            x = F.relu(x)
+        
+        # restore the relevance score of the output layer where we test
+        self.relevance_score_output_layer = F.relu(x)
+        
         # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
         return F.log_softmax(x, dim=1)
-
+    
+    
+    def relprop(self):
+        
+        relevance_score_of_each_layer = []
+        relevance_score = self.relevance_score_output_layer
+        relevance_score_of_each_layer.append(self.relevance_score_output_layer)
+       
+        
+        # get each layer's parameter in reverse order
+        parameters_reverse = []
+        for param in model.parameters():
+            param = [param]
+            paremeters_reverse = param.append(parameters_reverse)
+        
+        # caculate each layer's revelance score
+        for i in range(4):#len(self.labels))
+            positive_weight = F.relu(parameters_reverse[i])
+            sum_posi_weights = np.dot(self.tensor_of_each_layer[-(i+1)], parameters_reverse[i]) + 1e-9
+            s_coeffecient = relevance_score / sum_posi_weights
+            c_coeffecient = np.dot(s_coeffecient, positive_weight.T)
+            relevence_score = self.tensor_of_each_layer[-(i+1)] * c_coeffecient
+            relevance_score_of_each_layer.append(relevance_score)
+            
+        return revelance_score
+        
     # weight initialization
     def _initialize_weights(self):
         # print(self.modules())
