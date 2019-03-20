@@ -5,7 +5,7 @@ import torch.nn.init
 
 class Net(nn.Module):
     #layers is array that contain 3 element,they are l1,l2,l3's input size,l4's output size is 5 (5 types)
-    def __init__(self,layers=[100,100,100],classnum=5,component=1,batchnorm=False,dropout=False):
+    def __init__(self,layers=[],classnum=5,component=1,batchnorm=False,dropout=False):
         super(Net, self).__init__()
         # the input size districts 34 *years 4 + 5(extra features after onehotilized)
 
@@ -18,27 +18,31 @@ class Net(nn.Module):
             self.dropout = lambda x: x 
 
         inputd = 136
+        self.fc = []
+        self.bn = []
 
-        for x in range(len(layers)):
-            outputd = layers[x]
-            exec(f'self.l{x} = nn.Linear({inputd},{outputd})')
+        for i in range(len(layers)):
+            outputd = layers[i]
+            self.fcl = nn.Linear(inputd,outputd)
+            self.fc.append(self.fcl)
             if batchnorm:
-                exec(f'self.bn{x} = nn.BatchNorm1d({outputd},momentum={batchnorm})')
+                self.bnl = nn.BatchNorm1d(outputd,momentum=batchnorm,track_running_stats=True)
             else:
-                exec(f'self.bn{x} = lambda x: x')
+                exec(self.bnl = lambda x: x)
+            self.bn.append(bnl)
             inputd = outputd
             
-    def forward(self,data):
-        
-        for x in range(len(self.layers)):
-            exec(f'data = self.l{x}(data)')
-            exec(f'data = self.bn{x}(data)')
-            exec(f'data = self.dropout(data)')
-            if x != (len(self.layers)-1):
-                data = F.relu(data)
+    def forward(self,x):
+
+        for i in range(len(self.layers)):
+            x = self.fc[i](x)
+            x = self.bn[i](x)
+            x = self.dropout(x)
+            if i != len(self.layers)-1:
+                x = F.relu(x)
 
         # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
-        return F.log_softmax(data)
+        return F.log_softmax(x)
 
     # weight initialization
     def _initialize_weights(self):
