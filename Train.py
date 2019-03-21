@@ -101,6 +101,7 @@ def train(epoch,l1regularization=None,l2regularization=None):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 def validate():
+    model.eval()
     validate_loss = 0
     correct = 0
     for data, target in validate_loader:
@@ -122,6 +123,7 @@ def validate():
         100. * correct / len(validate_loader.dataset)))
 
 def test(test=True):
+    model.eval()
     test_loss = 0
     correct = 0
     for data, target in test_loader:
@@ -136,10 +138,12 @@ def test(test=True):
         test_loss += F.nll_loss(output, target).data.item()
         
         # max means the prediction
+
+        print(output)
         pred = output.data.max(1, keepdim=True)[1]
-        
+  
         relevance_scores = []
-        if pred.eq(target.data.view_as(pred)): #.cpu().sum()
+        if pred.eq(target.data): #.cpu().sum()
             correct += 1
             relevance_score = {}
             relevance_score['data'] = data
@@ -148,7 +152,7 @@ def test(test=True):
             relevance_scores.append(relevance_score)
         
         # data persistence
-        with open('relevance_scores.pk') as f:
+        with open('relevance_scores.pk', 'wb+') as f:
             pickle.dump(relevance_scores, f)
             
     test_loss /= len(test_loader.dataset)
@@ -159,16 +163,16 @@ def test(test=True):
     return correct//len(test_loader.dataset)
 
 if __name__ == '__main__':
-    config(shape=(100,100,100),
+    config(shape=[100,100,100],
            classnum=5,
            learningrate=0.001,
            learningrateschema=optim.SGD,
-           batchsize=128,
+           batchsize=64,
            testdata='testdata-muti.csv',
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
-           epoch=100,
-           samplenum=100000,
+           epoch=10,
+           samplenum=10000,
            sampletype='down',
            l1regularization=False,
            l2regularization=False,

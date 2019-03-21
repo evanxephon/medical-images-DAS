@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init
+import numpy as np
 
 
 class Net(nn.Module):
@@ -38,18 +39,19 @@ class Net(nn.Module):
             self.bn.append(bnl)
             inputd = outputd
 
-    def forward(self, x, test=False):
+    def forward(self, x):
         
         for i in range(len(self.layers)):
-            if test:
-                self.tensorofeachlayer.append(x.view(-1).numpy())
+            if x.shape[0] == 1:
+                self.tensor_of_each_layer.append(x.view(-1).cpu().detach().numpy())
             x = self.fc[i](x)
             x = self.bn[i](x)
             x = self.dropout(x)
             x = F.relu(x)
         
         # restore the relevance score of the output layer where we test
-        self.relevance_score_output_layer = F.relu(x)
+        if x.shape[0] == 1:
+            self.relevance_score_output_layer = F.relu(x).view(-1).cpu().detach().numpy()
         
         # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
         return F.log_softmax(x, dim=1)
@@ -59,26 +61,32 @@ class Net(nn.Module):
         
         relevance_score_of_each_layer = {}
         relevance_score = self.relevance_score_output_layer
+        self.tensor_of_each_layer.reverse()
+        
         
         # add the output layer's relevance score to the list
         relevance_score_of_each_layer['output-layer-relevance-score'] = self.relevance_score_output_layer
        
         # get each layer's parameter in reverse order
-        parameters_reverse = []
-        for name,param in model.named_parameters():
+        parameters = []
+   
+        for name, param in self.named_parameters():
             if 'fc' in name and 'weight' in name:
-                paremeters_reverse = param.append(parameters_reverse)
+                parameters.append(param.data.cpu().detach().numpy())
+        print(parameters)
+        parameters.reverse()
+        print(len(parameters))
+        print(len(self.tensor_of_each_layer))
         
         # caculate each layer's revelance score , 
         # assuming the input layer dimension is i and output layer dimension is j
-        for i in range(len(self.labels)):
+        for i in range(len(self.layers)):
             
             # get positive weight
-            positive_weight = F.relu(parameters_reverse[i])
+            positive_weight = np.abs(parameters[i])
             
             # after this, we get a j-dim-column-vector, adding the 1e-9 to keep the precision    i-dim-column-vector  *  j*i-matrix
-            # the tensor in the "self.tensor_of_each_layer" is reversed, so we should use the index backwards
-            sum_posi_weights = np.dot(parameters_reverse[i], self.tensor_of_each_layer[-(i+1)]) + 1e-9
+            sum_posi_weights = np.dot(positive_weight[i], self.tensor_of_each_layer[i]) + 1e-9
             
             # this is a numpy element-wise operation, we'll get a j-dim-column-vector            j-dim-column-vector / j-dim-column-vector
             s_coeffecient = relevance_score / sum_posi_weights
@@ -87,7 +95,7 @@ class Net(nn.Module):
             c_coeffecient = np.dot(positive_weight.T, s_coeffecient)
             
             # we get the previous layer's relevance score by using a numpy element-wise operation again   i-dim-v  *   i-dim-v 
-            relevance_score = self.tensor_of_each_layer[-(i+1)] * c_coeffecient
+            relevance_score = self.tensor_of_each_layer[i] * c_coeffecient
             
             relevance_score_of_each_layer[f'l{len(self.labels) - i}-layer-relevance-score'] = relevance_score
             
