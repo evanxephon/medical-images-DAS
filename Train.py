@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 import Dataset
 import os
+import pickle
 
 def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
@@ -120,21 +121,36 @@ def validate():
         validate_loss, correct, len(validate_loader.dataset),
         100. * correct / len(validate_loader.dataset)))
 
-def test():
+def test(test=True):
     test_loss = 0
     correct = 0
     for data, target in test_loader:
+        
         with torch.no_grad():
             data, target = Variable(data), Variable(target)
         data = data.cuda()
         target = target.cuda()
         output = model(data)
+        
         # calculate the sum of loss for testset
         test_loss += F.nll_loss(output, target).data.item()
+        
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
+        
+        relevance_scores = []
+        if pred.eq(target.data.view_as(pred)): #.cpu().sum()
+            correct += 1
+            relevance_score = {}
+            relevance_score['data'] = data
+            relevance_score['label'] = target
+            relevance_score['score'] = model.relprop()
+            relevance_scores.append(relevance_score)
+        
+        # data persistence
+        with open('relevance_scores.pk') as f:
+            pickle.dump(relevance_scores, f)
+            
     test_loss /= len(test_loader.dataset)
     # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
@@ -152,7 +168,7 @@ if __name__ == '__main__':
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
            epoch=100,
-           samplenum=16000,
+           samplenum=100000,
            sampletype='down',
            l1regularization=False,
            l2regularization=False,
