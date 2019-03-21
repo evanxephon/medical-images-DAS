@@ -42,7 +42,7 @@ class Net(nn.Module):
         
         for i in range(len(self.layers)):
             if test:
-                self.tensorofeachlayer.append(x.view(-1))
+                self.tensorofeachlayer.append(x.view(-1).numpy())
             x = self.fc[i](x)
             x = self.bn[i](x)
             x = self.dropout(x)
@@ -57,27 +57,41 @@ class Net(nn.Module):
     
     def relprop(self):
         
-        relevance_score_of_each_layer = []
+        relevance_score_of_each_layer = {}
         relevance_score = self.relevance_score_output_layer
-        relevance_score_of_each_layer.append(self.relevance_score_output_layer)
-       
         
+        # add the output layer's relevance score to the list
+        relevance_score_of_each_layer['output-layer-relevance-score'] = self.relevance_score_output_layer
+       
         # get each layer's parameter in reverse order
         parameters_reverse = []
-        for param in model.parameters():
-            param = [param]
-            paremeters_reverse = param.append(parameters_reverse)
+        for name,param in model.named_parameters():
+            if 'fc' in name and 'weight' in name:
+                paremeters_reverse = param.append(parameters_reverse)
         
-        # caculate each layer's revelance score
-        for i in range(4):#len(self.labels))
-            positive_weight = F.relu(parameters_reverse[i])
-            sum_posi_weights = np.dot(self.tensor_of_each_layer[-(i+1)], parameters_reverse[i]) + 1e-9
-            s_coeffecient = relevance_score / sum_posi_weights
-            c_coeffecient = np.dot(s_coeffecient, positive_weight.T)
-            relevence_score = self.tensor_of_each_layer[-(i+1)] * c_coeffecient
-            relevance_score_of_each_layer.append(relevance_score)
+        # caculate each layer's revelance score , 
+        # assuming the input layer dimension is i and output layer dimension is j
+        for i in range(len(self.labels)):
             
-        return revelance_score
+            # get positive weight
+            positive_weight = F.relu(parameters_reverse[i])
+            
+            # after this, we get a j-dim-column-vector, adding the 1e-9 to keep the precision    i-dim-column-vector  *  j*i-matrix
+            # the tensor in the "self.tensor_of_each_layer" is reversed, so we should use the index backwards
+            sum_posi_weights = np.dot(parameters_reverse[i], self.tensor_of_each_layer[-(i+1)]) + 1e-9
+            
+            # this is a numpy element-wise operation, we'll get a j-dim-column-vector            j-dim-column-vector / j-dim-column-vector
+            s_coeffecient = relevance_score / sum_posi_weights
+            
+            # we'll get a i-dim-column-vector                                                    j-dim-column-vector  *   j*i-matrix
+            c_coeffecient = np.dot(positive_weight.T, s_coeffecient)
+            
+            # we get the previous layer's relevance score by using a numpy element-wise operation again   i-dim-v  *   i-dim-v 
+            relevance_score = self.tensor_of_each_layer[-(i+1)] * c_coeffecient
+            
+            relevance_score_of_each_layer[f'l{len(self.labels) - i}-layer-relevance-score'] = relevance_score
+            
+        return revelance_score_of_each_layer
         
     # weight initialization
     def _initialize_weights(self):
