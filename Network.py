@@ -15,6 +15,8 @@ class Net(nn.Module):
         
         layers.append(classnum)
         self.layers = layers
+
+        self.cnn = cnn
         
         if dropout:
             self.dropout = nn.Dropout(p=dropout)
@@ -62,9 +64,9 @@ class Net(nn.Module):
 
     def forward(self, x):
         
-        if cnn:
+        if self.cnn:
             x = x.view(-1,cnn[0][0],34,4)
-            for i in range(len(conv))
+            for i in range(len(conv)):
                 x = self.cv[i](x)
             x = x.view(-1,self.layers[0])
             

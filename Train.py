@@ -151,11 +151,9 @@ def test():
         test_loss += F.nll_loss(output, target).data.item()
         
         # max means the prediction
-        print(output)
         pred = output.data.max(1, keepdim=True)[1]
   
-        relevance_scores = []
-        correct += pred.eq(target.data).cpu().sum()
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         
     test_loss /= len(test_loader.dataset)
     # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
@@ -204,11 +202,11 @@ if __name__ == '__main__':
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
            epoch=10,
-           samplenum=10000,
+           samplenum=100000,
            sampletype='down',
            l1regularization=False,
            l2regularization=False,
            cnn = False,
-           datapath='/data/dataaugmentationinmedicalfield/kernal_comb/',
+           datapath='/data/dataaugmentationinmedicalfield/data-accumulation/',
            batchnorm=0.1,
            dropout=False)
