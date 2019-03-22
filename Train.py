@@ -10,7 +10,7 @@ import pickle
 
 def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
-    # print the config
+    # print the configuaration
     print(f'latent-layer-shape:{shape}')
     print(f'the-num-of-classes:{classnum}')
     print(f'learningrate:{learningrate}')
@@ -46,8 +46,14 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
     # get the dataloader
     global train_loader
     global test_loader
-    global validate_loader 
+    global validate_loader
+    global relprop_loader
+    
     train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,datapath)
+    
+    relprop_loader = torch.utils.data.DataLoader(dataset=Dataset.MyDataset(pd.read_csv(testdata)),
+                                              batch_size=1,
+                                              shuffle=False)
     
     accuracy = []
  
@@ -57,10 +63,15 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
         accuracy.append(test().numpy())
     
     accuracy = pd.DataFrame(accuracy).T
-    print(accuracy.describe())
+    print(accuracy.median(),accuracy.max())
+    
+    # relevance score computation
+    relprop()
          
 def train(epoch,l1regularization=None,l2regularization=None):
+    
     model.train()
+    
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = Variable(data), Variable(target)
         data = data.cuda()
@@ -101,7 +112,9 @@ def train(epoch,l1regularization=None,l2regularization=None):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 def validate():
+    
     model.eval()
+    
     validate_loss = 0
     correct = 0
     for data, target in validate_loader:
@@ -122,8 +135,10 @@ def validate():
         validate_loss, correct, len(validate_loader.dataset),
         100. * correct / len(validate_loader.dataset)))
 
-def test(test=True):
+def test():
+    
     model.eval()
+    
     test_loss = 0
     correct = 0
     for data, target in test_loader:
@@ -138,13 +153,38 @@ def test(test=True):
         test_loss += F.nll_loss(output, target).data.item()
         
         # max means the prediction
-
         print(output)
         pred = output.data.max(1, keepdim=True)[1]
   
         relevance_scores = []
-        if pred.eq(target.data): #.cpu().sum()
-            correct += 1
+        correct += pred.eq(target.data).cpu().sum()
+        
+    test_loss /= len(test_loader.dataset)
+    # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+    return correct//len(test_loader.dataset)
+
+def relprop()
+
+    model.eval()
+
+    for data, target in relprop_loader:
+        
+        with torch.no_grad():
+            data, target = Variable(data), Variable(target)
+            
+        data = data.cuda()
+        target = target.cuda()
+        output = model(data)
+        
+        # max means the prediction
+
+        pred = output.data.max(1, keepdim=True)[1]
+  
+        relevance_scores = []
+        if pred.eq(target.data): 
             relevance_score = {}
             relevance_score['data'] = data
             relevance_score['label'] = target
@@ -154,20 +194,14 @@ def test(test=True):
         # data persistence
         with open('relevance_scores.pk', 'wb+') as f:
             pickle.dump(relevance_scores, f)
-            
-    test_loss /= len(test_loader.dataset)
-    # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
-    return correct//len(test_loader.dataset)
-
+    
+    
 if __name__ == '__main__':
     config(shape=[100,100,100],
            classnum=5,
            learningrate=0.001,
            learningrateschema=optim.SGD,
-           batchsize=64,
+           batchsize=128,
            testdata='testdata-muti.csv',
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
