@@ -46,7 +46,7 @@ def generate_3X_withnum(data, size, type, component=3):
 # we use a kernal which we only focus on it's shape,
 # it is like a convolution process to some extent, but we just replace the data in the kernal by the data of another row in the same position, 
 # in these process, the data is seen as a matrix 4 years * 34 districts
-def generate_fixed_kernel(data,kernelsize=(2,28)):
+def generate_fixed_kernel(data,kernelsize=(2,28), strategy='replace'):
     horizontalsize = 34-kernelsize[1]+1
     verticalsize = 4-kernelsize[0]+1
     dataset = pd.DataFrame(columns=data.columns)
@@ -59,23 +59,32 @@ def generate_fixed_kernel(data,kernelsize=(2,28)):
                     for l in range(verticalsize):
                         a = ((34 * l) + k)
                         b = ((34 * l) + k + kernelsize[1])
-                        thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
-                        thechosenrow.iloc[:, (a+34):(b+34)] = data.iloc[j, (a+34):(b+34)].values
+                        
+                        if strategy == 'replace':
+                            thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                            thechosenrow.iloc[:, (a+34):(b+34)] = data.iloc[j, (a+34):(b+34)].values
+                        elif strategy == 'add':
+                            thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
+                            thechosenrow.iloc[:, (a+34):(b+34)] += data.iloc[j, (a+34):(b+34)].values
+                            
                         augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         dataset = dataset.append(augrows) 
     return dataset
 
+
 # the strategy here is we first divide the 34 district into 6 lobes, and we use different kernal on each lobe
-# and we don't replace data this time, we add them up.
-def generate_different_areas_add(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
+# and we can either replace data, or add them up.
+def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     for x in range(len(district)):
         horizontalsize = district[x] - kernelsize[x][1] + 1
         verticalsize = 4 - kernelsize[x][0] + 1
         for i in range(len(data)):
+            
             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
             augrows = pd.DataFrame(columns=data.columns)
+            
             for j in range(len(data)):
                 if j != i:
                     for k in range(horizontalsize):
@@ -83,68 +92,29 @@ def generate_different_areas_add(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),
                             for m in range(kernelsize[x][1]):
                                 a = (sum(district[:x])+m+k)*4 + l
                                 b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                                thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
+                                
+                                if strategy == 'replace':
+                                    thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                                elif strategy == 'add':
+                                    thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
+                         
                             augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-            dataset = pd.concat([dataset,augrows])
-    return dataset
-
-# same stratege as upon, but we choose how many to generate 
-def generate_different_areas_add_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0):
-    dataset = pd.DataFrame(columns=data.columns)
-    sampleset = list(range(len(data)))
-    set1 = random.sample(sampleset,usedrownum)
-    for i in set1:
-        thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        augrows = pd.DataFrame(columns=data.columns)
-        # it may be same row we are operating, if i've got some extra time, i may fix it
-        set2 = random.sample(sampleset,usedrownum)
-        for j in set2:
-            for x in range(len(district)):
-                horizontalsize = district[x] - kernelsize[x][1] + 1
-                verticalsize = 4 - kernelsize[x][0] + 1
-                for k in range(horizontalsize):
-                    for l in range(verticalsize):
-                        for m in range(kernelsize[x][1]):
-                            a = (sum(district[:x])+m+k)*4 + l
-                            b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                            thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
-                        augrows = augrows.append(thechosenrow)
-                        thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        dataset = pd.concat([dataset,augrows])
-    return dataset
-
-# same strategy as before, but replace not add again
-def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1)):
-    dataset = pd.DataFrame(columns=data.columns)
-    for x in range(len(district)):
-        horizontalsize = district[x] - kernelsize[x][1] + 1
-        verticalsize = 4 - kernelsize[x][0] + 1
-        for i in range(len(data)):
-            thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-            augrows = pd.DataFrame(columns=data.columns)
-            for j in range(len(data)):
-                if j != i:
-                    for k in range(horizontalsize):
-                        for l in range(verticalsize):
-                            for m in range(kernelsize[x][1]):
-                                a = (sum(district[:x])+m+k)*4 + l
-                                b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                                thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
-                            augrows = augrows.append(thechosenrow)
-                            thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+                            
             dataset = pd.concat([dataset,augrows])    
     return dataset
 
 # same strategy, but fixed number
-def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0):
+def generate_different_areas_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0,strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     sampleset = list(range(len(data)))
     set1 = random.sample(sampleset,usedrownum)
     for i in set1:
+        
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
         set2 = random.sample(sampleset,usedrownum)
+        
         for j in set2:
             for x in range(len(district)):
                 horizontalsize = district[x] - kernelsize[x][1] + 1
@@ -154,15 +124,21 @@ def generate_different_areas_replace_withnum(data,kernelsize=((2,4),(2,5),(2,2),
                         for m in range(kernelsize[x][1]):
                             a = (sum(district[:x])+m+k)*4 + l
                             b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                            thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                            
+                            if strategy == 'replace':
+                                thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                            elif strategy == 'add':
+                                thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
+                                
                         augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+                        
         dataset = pd.concat([dataset,augrows])
     return dataset
 
-# use six fixed kernal to each lobe, but when it come to the type which has very few orginal data, we replace several lobe's data, not
+# use six fixed kernal to each lobe, but when it come to the type which has very few orginal data, we replace or add several lobe's data, not
 # one, and we calculate the combinations first.
-def generate_different_areas_replace_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1)):
+def generate_different_areas_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1),strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
                      
     if data.iloc[0,-1] == 0:
@@ -182,23 +158,31 @@ def generate_different_areas_replace_combinations_for_different_type(data,kernel
         for j in range(len(data)):
             if j != i:
                 for comb in combs:
+                    
                     horizontalsize = district[comb[0]] - kernelsize[comb[0]][1] + 1
                     verticalsize = 4 - kernelsize[comb[0]][0] + 1
+                    
                     for k in range(horizontalsize):
                         for l in range(verticalsize):
                             for x in comb:
                                 for m in range(kernelsize[x][1]):
                                     a = (sum(district[:x])+m+k)*4 + l
                                     b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                                    thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                                    
+                                    if strategy == 'replace':
+                                        thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
+                                    elif strategy == 'add':
+                                        thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
+                                        
                             augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+                            
         dataset = dataset.append(augrows)    
     return dataset
                      
 # muti-threading
 class outputthread(threading.Thread):
-    def __init__(self,function,thetype,data,num=None,classnum='muti',kernelsize=None):
+    def __init__(self,function,thetype,data,num=None,classnum='muti',kernelsize=None,strategy='replace'):
         threading.Thread.__init__(self)
         self.function = function
         self.data = data
@@ -206,23 +190,24 @@ class outputthread(threading.Thread):
         self.num = num
         self.kernelsize = kernelsize
         self.classnum = classnum
+        self.strategy = strategy
     def run(self):
         print('onethreadstart')
         start = time.clock()
         if self.num and self.kernelsize:
-            data = self.function(self.data,self.kernelsize,self.num)
+            data = self.function(self.data,self.kernelsize,self.num,strategy=strategy)
         elif not self.num and not self.kernelsize:
-            data = self.function(self.data)
+            data = self.function(self.data,strategy=strategy)
         elif not self.kernelsize and self.num:
-            data = self.function(self.data,self.num)
+            data = self.function(self.data,self.num,strategy=strategy)
         elif self.kernelsize and not self.num:
-            data = self.function(self.data,self.kernelsize)
+            data = self.function(self.data,self.kernelsize,strategy=strategy)
         data.to_csv(f'{self.type}-{self.classnum}.csv',encoding=None,index=False)
         end = time.clock()
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False,thread=False):
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False,thread=False,stragety='replace'):
     # choose the data saving path
     if savepath:
         if not os.path.isdir(savepath):
@@ -266,19 +251,19 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     # open a thread
         if thread:
             if kernelsize:
-                thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x])
+                thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
             else:
-                thread = outputthread(function,x,datatrain,num,classnum=classnum)
+                thread = outputthread(function,x,datatrain,num,classnum=classnum,strategy=strategy)
             thread.start()
         else:
             if num and kernelsize:
-                data = function(datatrain,kernelsize[x],num)
+                data = function(datatrain,kernelsize[x],num,strategy=strategy)
             elif not num and not kernelsize:
-                data = function(datatrain)
+                data = function(datatrain,strategy=strategy)
             elif not kernelsize and num:
-                data = function(datatrain,num)
+                data = function(datatrain,num,strategy=strategy)
             elif kernelsize and not num:
-                data = function(datatrain,kernelsize[x])
+                data = function(datatrain,kernelsize[x],strategy=strategy)
             data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
         
     # save the testdata
@@ -296,7 +281,8 @@ if __name__ == '__main__':
                         ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
                         ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             binary=False,
-            savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22')'''
+            savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22',
+            strategy='add')'''
 
     '''config('rawdata1sort.csv',
            function=generate_different_areas_replace_combinations_for_different_type,
@@ -320,4 +306,6 @@ if __name__ == '__main__':
                binary=False,
                savepath='/data/dataaugmentationinmedicalfield/'+dirname,
                crossvalidation=True,
-               thread=False)
+               thread=False,
+               strategy='replace'
+               )
