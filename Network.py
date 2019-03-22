@@ -6,7 +6,7 @@ import numpy as np
 
 class Net(nn.Module):
     #layers is array that contain 3 element，they are l1，l2，l3's input size，l4's output size is 5 (5 types)
-    def __init__(self,layers=[],classnum=5,component=1,batchnorm=False,dropout=False):
+    def __init__(self,layers=[],classnum=5,component=1,batchnorm=False,dropout=False,cnn=False):
         super(Net, self).__init__()
         # the input size districts 34 *years 4 + 5(extra features after onehotilized)
         
@@ -22,9 +22,30 @@ class Net(nn.Module):
             self.dropout = lambda x: x 
 
         inputd = 34 * 4
+        self.cv = []
         self.fc = []
         self.bn = []
-
+        
+        # CNN
+        if cnn:
+            for kernel in cnn:
+                self.conv = nn.Sequential( #input shape (1,34,4)
+                                           nn.Conv2d(
+                                           in_channels=kernel[0],
+                                           out_channels=kernel[1],
+                                           kernel_size=kernel[2], #filter size
+                                           stride=kernel[3], #filter step
+                                           padding=kernel[4]
+                                           ),
+           
+                                           #nn.Dropout(dropout),  
+                                           nn.BatchNorm2d(1, momentum=batchnorm),
+                                           nn.ReLU(),
+                                           #nn.MaxPool2d(kernel_size=2)
+                                           )
+                setattr(self,f'conv{i}',conv)
+                self.cv.append(self.conv)
+        
         for i in range(len(layers)):
             outputd = layers[i]
             fcl = nn.Linear(inputd,outputd)
@@ -41,6 +62,12 @@ class Net(nn.Module):
 
     def forward(self, x):
         
+        if cnn:
+            x = x.view(-1,cnn[0][0],34,4)
+            for i in range(len(conv))
+                x = self.cv[i](x)
+            x = x.view(-1,self.layers[0])
+            
         for i in range(len(self.layers)):
             if x.shape[0] == 1:
                 self.tensor_of_each_layer.append(x.view(-1).cpu().detach().numpy())
@@ -73,10 +100,10 @@ class Net(nn.Module):
         for name, param in self.named_parameters():
             if 'fc' in name and 'weight' in name:
                 parameters.append(param.data.cpu().detach().numpy())
-        print(parameters)
+#         print(parameters)
         parameters.reverse()
-        print(len(parameters))
-        print(len(self.tensor_of_each_layer))
+#         print(len(parameters))
+#         print(len(self.tensor_of_each_layer))
         
         # caculate each layer's revelance score , 
         # assuming the input layer dimension is i and output layer dimension is j
@@ -112,59 +139,3 @@ class Net(nn.Module):
                 # m.weight.data.fill_(1.0)
                 torch.nn.init.xavier_uniform_(m.weight, gain=1)
                 #print(m.weight)
-
-
-class CNN(nn.Module):
-    def __init__(self,type):
-        super(CNN, self,).__init__()
-        self.conv1 = nn.Sequential( #input shape (1,34,4)
-            nn.Conv2d(in_channels=1,
-                      out_channels=1,
-                      kernel_size=2, #filter size
-                      stride=1, #filter step
-                      padding=0
-                      ),
-            #nn.Dropout(0.5), 
-            nn.BatchNorm2d(1, momentum=0.5),
-            nn.ReLU(),
-            #nn.MaxPool2d(kernel_size=2)
-
-        )
-        '''self.conv2 = nn.Sequential(nn.Conv2d(1, 1, 2, 1, 0),
-                                  #nn.Dropout(0.3), 
-                                  nn.ReLU(),
-                                  #nn.MaxPool2d(2)
-        )'''
-        self.l3 = nn.Linear(1*33*3,100)
-        self.bn2 = nn.BatchNorm1d(100, momentum=0.5)
-
-        self.l4 = nn.Linear(100,type)
-        self.bn3 = nn.BatchNorm1d(type, momentum=0.5)
-        
-    def forward(self, x):
-        #print(f'shapebefore:{x.shape}')
-
-        x = x.view(-1,1,34,4) # the dimension is related to the convolution channel
-        #print(f'shapeafter:{x.shape}') 
-        x = self.conv1(x)
-
-        #x = self.conv2(x)
-        #print(f'shapeafterconv:{x.shape}')
-
-        x = x.view(-1,99)
-        #print(f'shapeafterview:{x.shape}')
-        #x = x.view(x.size(0), -1) # flat
-
-        x = self.l3(x)
-        x = self.bn2(x)
-
-        x = self.l4(x)
-        x = self.bn3(x)
-        
-        return F.log_softmax(x, dim=1)
-    
-    def _initialize_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-               torch.nn.init.xavier_uniform_(m.weight, gain=1)
-
