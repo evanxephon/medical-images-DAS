@@ -58,10 +58,11 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
     for i in range(epoch):
         train(i,l1regularization=l1regularization,l2regularization=l2regularization)
         validate()
-        accuracy.append(test().numpy())
+        accuracy.append(test().cpu().numpy())
     
     accuracy = pd.DataFrame(accuracy).T
-    print(accuracy.median(),accuracy.max())
+    print(accuracy)
+    print(f'median:{accuracy.median} max:{accuracy.max()}')
     
     # relevance score computation
     relprop()
@@ -139,6 +140,7 @@ def test():
     
     test_loss = 0
     correct = 0
+
     for data, target in test_loader:
         
         with torch.no_grad():
@@ -160,11 +162,13 @@ def test():
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
-    return correct//len(test_loader.dataset)
+
+    return 100. * correct / len(test_loader.dataset)
 
 def relprop():
 
     model.eval()
+    relevance_scores = []
 
     for data, target in relprop_loader:
         
@@ -177,19 +181,19 @@ def relprop():
         
         # max means the prediction
 
-        pred = output.data.max(1, keepdim=True)[1]
-  
-        relevance_scores = []
-        if pred.eq(target.data): 
+        pred = output.data.max(1, keepdim=True)[1][0]
+
+        if pred.eq(target.data):
+            print('one correct') 
             relevance_score = {}
             relevance_score['data'] = data
             relevance_score['label'] = target
             relevance_score['score'] = model.relprop()
             relevance_scores.append(relevance_score)
         
-        # data persistence
-        with open('relevance_scores.pk', 'wb+') as f:
-            pickle.dump(relevance_scores, f)
+    # data persistence
+    with open('relevance_scores.pk', 'wb+') as f:
+        pickle.dump(relevance_scores, f)
     
     
 if __name__ == '__main__':
@@ -201,12 +205,12 @@ if __name__ == '__main__':
            testdata='testdata-muti.csv',
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
-           epoch=10,
-           samplenum=100000,
+           epoch=5,
+           samplenum=10000,
            sampletype='down',
            l1regularization=False,
            l2regularization=False,
            cnn = False,
-           datapath='/data/dataaugmentationinmedicalfield/data-accumulation/',
+           datapath='/data/dataaugmentationinmedicalfield/kernal_comb/',
            batchnorm=0.1,
            dropout=False)

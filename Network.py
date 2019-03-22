@@ -107,7 +107,7 @@ class Net(nn.Module):
 #         print(len(parameters))
 #         print(len(self.tensor_of_each_layer))
         
-        # caculate each layer's revelance score , 
+        # caculate each layer's relevance score , 
         # assuming the input layer dimension is i and output layer dimension is j
         for i in range(len(self.layers)):
             
@@ -126,9 +126,9 @@ class Net(nn.Module):
             # we get the previous layer's relevance score by using a numpy element-wise operation again   i-dim-v  *   i-dim-v 
             relevance_score = self.tensor_of_each_layer[i] * c_coeffecient
             
-            relevance_score_of_each_layer[f'l{len(self.labels) - i}-layer-relevance-score'] = relevance_score
+            relevance_score_of_each_layer[f'l{len(self.layers) - i}-layer-relevance-score'] = relevance_score
             
-        return revelance_score_of_each_layer
+        return relevance_score_of_each_layer
         
     # weight initialization
     def _initialize_weights(self):
