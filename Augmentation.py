@@ -207,7 +207,7 @@ class outputthread(threading.Thread):
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False,thread=False,stragety='replace'):
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False,thread=False,strategy='replace'):
     # choose the data saving path
     if savepath:
         if not os.path.isdir(savepath):
@@ -271,7 +271,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    '''config('rawdata1sort.csv',
+    config('rawdata1sort.csv',
             function=generate_different_areas_replace,
             num=False,
             testnum=100,
@@ -281,8 +281,8 @@ if __name__ == '__main__':
                         ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
                         ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             binary=False,
-            savepath='/data/dataaugmentationinmedicalfield/data-2019-3-11-22',
-            strategy='add')'''
+            savepath='/data/dataaugmentationinmedicalfield/data-accumulation',
+            strategy='add')
 
     '''config('rawdata1sort.csv',
            function=generate_different_areas_replace_combinations_for_different_type,
@@ -292,7 +292,7 @@ if __name__ == '__main__':
            savepath='/data/dataaugmentationinmedicalfield/kernal_comb')'''
     
     # cross validation
-    for x in range(20):
+    '''for x in range(20):
         dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
         config('rawdata1sort.csv',
                function=generate_different_areas_replace,
@@ -308,4 +308,4 @@ if __name__ == '__main__':
                crossvalidation=True,
                thread=False,
                strategy='replace'
-               )
+               )'''

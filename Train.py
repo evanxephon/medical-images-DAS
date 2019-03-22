@@ -166,7 +166,7 @@ def test():
         100. * correct / len(test_loader.dataset)))
     return correct//len(test_loader.dataset)
 
-def relprop()
+def relprop():
 
     model.eval()
 
