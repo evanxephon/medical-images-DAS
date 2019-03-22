@@ -31,10 +31,8 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
        
 
     global model
-    if cnn:
-        model = Network.CNN(classnum,batchnorm=batchnorm,dropout=dropout)
-    else: 
-        model = Network.Net(shape,classnum,batchnorm=batchnorm,dropout=dropout)
+    
+    model = Network.Net(shape,classnum,batchnorm=batchnorm,dropout=dropout,cnn=cnn)
         
     model.cuda()
     model._initialize_weights()
