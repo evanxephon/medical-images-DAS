@@ -85,6 +85,12 @@ class Net(nn.Module):
         # restore the relevance score of the output layer where we test
         if x.shape[0] == 1:
             self.relevance_score_output_layer = F.relu(x).view(-1).cpu().detach().numpy()
+
+            # set the output layer's relevance score to be zero except for the max value i.e the predict type 
+
+            for i in range(len(self.relevance_score_output_layer)):
+                if self.relevance_score_output_layer[i] != self.relevance_score_output_layer.max():
+                    self.relevance_score_output_layer[i] = 0
         
         # activation function :softmax,here we use log_softmax which'll match the NLLLoss function, combine them we get the same effect as softmax+crossentropy
         return F.log_softmax(x, dim=1)

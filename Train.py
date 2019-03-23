@@ -165,11 +165,12 @@ def test():
         100. * correct / len(test_loader.dataset)))
     
     # record the correct predict type
-    pred = pd.DataFrame(pred)
+    '''pred = pred.cpu().numpy()
+    pred = pd.DateFrame(pred)
     target.data.cpu().numpy()
     target = pd.DataFrame(target)
     correctpred = pred.loc[pred == target]
-    print(correctpred.count())
+    print(correctpred.count())'''
 
     return 100. * correct / len(test_loader.dataset)
 
@@ -214,11 +215,11 @@ if __name__ == '__main__':
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
            epoch=10,
-           samplenum=250000,
-           sampletype='down',
+           samplenum=False,
+           sampletype=False,
            l1regularization=False,
-           l2regularization=0.0825,
+           l2regularization=False,
            cnn = False, #[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/crossvalidation-batch-1-5/',
+           datapath='/data/dataaugmentationinmedicalfield/data-accumulation/',
            batchnorm=0.1,
            dropout=False)
