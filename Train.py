@@ -186,8 +186,8 @@ def relprop():
         if pred.eq(target.data):
             print('one correct') 
             relevance_score = {}
-            relevance_score['data'] = data
-            relevance_score['label'] = target
+            relevance_score['data'] = data.cpu().numpy()
+            relevance_score['label'] = target.cpu().numpy()
             relevance_score['score'] = model.relprop()
             relevance_scores.append(relevance_score)
         
@@ -205,12 +205,12 @@ if __name__ == '__main__':
            testdata='testdata-muti.csv',
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
-           epoch=5,
-           samplenum=10000,
+           epoch=50,
+           samplenum=100000,
            sampletype='down',
            l1regularization=False,
            l2regularization=False,
            cnn = False,
-           datapath='/data/dataaugmentationinmedicalfield/kernal_comb/',
+           datapath='/data/dataaugmentationinmedicalfield/data-accumulation/',
            batchnorm=0.1,
            dropout=False)
