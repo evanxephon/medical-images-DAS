@@ -157,11 +157,19 @@ def test():
   
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         
+        
     test_loss /= len(test_loader.dataset)
     # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+    
+    # record the correct predict type
+    pred = pd.DataFrame(pred)
+    target.data.cpu().numpy()
+    target = pd.DataFrame(target)
+    correctpred = pred.loc[pred == target]
+    print(correctpred.count())
 
     return 100. * correct / len(test_loader.dataset)
 
@@ -205,12 +213,12 @@ if __name__ == '__main__':
            testdata='testdata-muti.csv',
            validatedata='validatedata-muti.csv',
            traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
-           epoch=50,
-           samplenum=100000,
+           epoch=10,
+           samplenum=250000,
            sampletype='down',
            l1regularization=False,
-           l2regularization=False,
-           cnn = False,
-           datapath='/data/dataaugmentationinmedicalfield/data-accumulation/',
+           l2regularization=0.0825,
+           cnn = False, #[[1,1,2,1,0]],
+           datapath='/data/dataaugmentationinmedicalfield/crossvalidation-batch-1-5/',
            batchnorm=0.1,
            dropout=False)

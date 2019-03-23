@@ -75,7 +75,7 @@ def generate_fixed_kernel(data,kernelsize=(2,28), strategy='replace'):
 
 # the strategy here is we first divide the 34 district into 6 lobes, and we use different kernal on each lobe
 # and we can either replace data, or add them up.
-def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),strategy='replace'):
+def generate_different_kernels(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     for x in range(len(district)):
         horizontalsize = district[x] - kernelsize[x][1] + 1
@@ -105,7 +105,7 @@ def generate_different_areas_replace(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2
     return dataset
 
 # same strategy, but fixed number
-def generate_different_areas_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0,strategy='replace'):
+def generate_different_kernels_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0,strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     sampleset = list(range(len(data)))
     set1 = random.sample(sampleset,usedrownum)
@@ -138,7 +138,7 @@ def generate_different_areas_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2
 
 # use six fixed kernal to each lobe, but when it come to the type which has very few orginal data, we replace or add several lobe's data, not
 # one, and we calculate the combinations first.
-def generate_different_areas_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1),strategy='replace'):
+def generate_different_kernels_combinations_for_different_type(data,kernelsize=((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),district=(9,11,4,5,4,1),strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
                      
     if data.iloc[0,-1] == 0:
@@ -272,20 +272,20 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     
 if __name__ == '__main__':
     config('rawdata1sort.csv',
-            function=generate_different_areas_replace,
+            function=generate_different_kernels_combinations_for_different_type,
             num=False,
             testnum=100,
-            kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
-                        ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                        ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                        ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                        ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
+            #kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+            #            ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
+            #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
+            #            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
+            #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             binary=False,
-            savepath='/data/dataaugmentationinmedicalfield/data-accumulation',
+            savepath='/data/dataaugmentationinmedicalfield/data-accumulation-1',
             strategy='add')
 
     '''config('rawdata1sort.csv',
-           function=generate_different_areas_replace_combinations_for_different_type,
+           function=generate_different_kernels_combinations_for_different_type,
            num=False,
            testnum=100,
            binary=False,
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     '''for x in range(20):
         dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
         config('rawdata1sort.csv',
-               function=generate_different_areas_replace,
+               function=generate_different_kernels,
                num=False,
                testnum=25,
                kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),

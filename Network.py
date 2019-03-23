@@ -22,22 +22,23 @@ class Net(nn.Module):
             self.dropout = nn.Dropout(p=dropout)
         else:
             self.dropout = lambda x: x 
-
+          
         inputd = 34 * 4
+
         self.cv = []
         self.fc = []
         self.bn = []
         
         # CNN
         if cnn:
-            for kernel in cnn:
-                self.conv = nn.Sequential( #input shape (1,34,4)
+            for i in range(len(cnn)):
+                conv = nn.Sequential( #input shape (1,34,4)
                                            nn.Conv2d(
-                                           in_channels=kernel[0],
-                                           out_channels=kernel[1],
-                                           kernel_size=kernel[2], #filter size
-                                           stride=kernel[3], #filter step
-                                           padding=kernel[4]
+                                           in_channels=cnn[i][0],
+                                           out_channels=cnn[i][1],
+                                           kernel_size=cnn[i][2], #filter size
+                                           stride=cnn[i][3], #filter step
+                                           padding=cnn[i][4]
                                            ),
            
                                            #nn.Dropout(dropout),  
@@ -46,7 +47,10 @@ class Net(nn.Module):
                                            #nn.MaxPool2d(kernel_size=2)
                                            )
                 setattr(self,f'conv{i}',conv)
-                self.cv.append(self.conv)
+                self.cv.append(conv)
+            inputd = int((34 - cnn[i][2] + 1 + 2 * cnn[i][4]) * (4 - cnn[i][2] + 1 + 2 * cnn[i][4]) / (cnn[i][3]))
+
+        self.dimafterconv = inputd
         
         for i in range(len(layers)):
             outputd = layers[i]
@@ -65,10 +69,10 @@ class Net(nn.Module):
     def forward(self, x):
         
         if self.cnn:
-            x = x.view(-1,cnn[0][0],34,4)
-            for i in range(len(conv)):
+            x = x.view(-1,self.cnn[0][0],34,4)
+            for i in range(len(self.cv)):
                 x = self.cv[i](x)
-            x = x.view(-1,self.layers[0])
+            x = x.view(-1,self.dimafterconv)
             
         for i in range(len(self.layers)):
             if x.shape[0] == 1:
