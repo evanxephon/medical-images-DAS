@@ -10,6 +10,26 @@ import pickle
 
 def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
+    # binary or muti classification set
+
+    traindata = []
+
+    if classnum > 2:
+
+        testdata = 'testdata-muti.csv'
+        validatedata = 'validatedata-muti.csv'
+
+        for i in range(classnum):
+            traindata.append(f'{i}-muti.csv')
+
+    elif classnum == 2:
+
+        testdata = 'testdata-binary.csv'
+        validatedata = 'validatedata-binary.csv'
+
+        for i in range(classnum):
+            traindata.append(f'{i}-binary.csv')
+    
     # print the configuaration
     print(f'latent-layer-shape:{shape}')
     print(f'the-num-of-classes:{classnum}')
@@ -46,6 +66,10 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
     global test_loader
     global validate_loader
     global relprop_loader
+
+    # binary or muti classification set
+    traindata = []    
+
     
     train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,datapath)
     
@@ -207,19 +231,16 @@ def relprop():
     
 if __name__ == '__main__':
     config(shape=[100,100,100],
-           classnum=5,
+           classnum=2,
            learningrate=0.001,
            learningrateschema=optim.SGD,
            batchsize=128,
-           testdata='testdata-muti.csv',
-           validatedata='validatedata-muti.csv',
-           traindata=('0-muti.csv','1-muti.csv','2-muti.csv','3-muti.csv','4-muti.csv'),
-           epoch=10,
+           epoch=50,
            samplenum=False,
            sampletype=False,
            l1regularization=False,
            l2regularization=False,
            cnn = False, #[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/data-accumulation/',
-           batchnorm=0.1,
+           datapath='/data/dataaugmentationinmedicalfield/data-accumulation-binary/',
+           batchnorm=0.2,
            dropout=False)
