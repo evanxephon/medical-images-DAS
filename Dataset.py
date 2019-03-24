@@ -18,7 +18,7 @@ class MyDataset(torch.utils.data.Dataset):
         self.feature = torch.Tensor(np.array(feature))
 
     def __getitem__(self, index):
-        return self.feature[index],self.label[index]
+        return self.feature[index], self.label[index]
 
     def __len__(self):
         return self.len
@@ -58,7 +58,7 @@ def upsample(data,num):
 def downsample(data,num):
     return data.loc[np.random.choice(data.index,size=num),:]
 
-def config(batchsize,traindata,validatedata,testdata,onehot=True):
+def config(batchsize,traindata,validatedata,testdata,classnum,onehot=True):
 
     # set the batchsize and the other things
     batch_size = batchsize
@@ -72,8 +72,10 @@ def config(batchsize,traindata,validatedata,testdata,onehot=True):
 
     # get balanced validatedata
     validatedatabalanced = pd.DataFrame()
-    for x in range(5):
-        validatedatabalanced = validatedatabalanced.append(validatedata[validatedata['label'] == x].sample(100,replace=True))
+    
+    
+    for x in range(classnum):
+        validatedatabalanced = validatedatabalanced.append(validatedata[validatedata['label'] == x].sample(500 // classnum ,replace=True))
     
     traindata = MyDataset(traindata)
     validatedata = MyDataset(validatedatabalanced)
@@ -91,10 +93,10 @@ def config(batchsize,traindata,validatedata,testdata,onehot=True):
                                               shuffle=False)
     return train_loader,validate_loader,test_loader
 
-def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,datapath=False):
+def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,datapath=False):
     if datapath:
         os.chdir(datapath)    
     traindata = maketraindata(samplenum,sampletype,traindata)
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
-    return config(batchsize,traindata,validatedata,testdata,onehot=False)
+    return config(batchsize,traindata,validatedata,testdata,classnum,onehot=False)

@@ -67,11 +67,7 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
     global validate_loader
     global relprop_loader
 
-    # binary or muti classification set
-    traindata = []    
-
-    
-    train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,datapath)
+    train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,datapath)
     
     relprop_loader = torch.utils.data.DataLoader(dataset=Dataset.MyDataset(pd.read_csv(testdata)),
                                               batch_size=1,
