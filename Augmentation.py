@@ -22,7 +22,7 @@ def generate_3X(data, type, component=3):
         str0 = '-'
         tmp1['label'] = type
         tmp1.index = [str0.join(list(map(str, sorted(comb))))]
-        output.append(tmp1)
+        output = output.append(tmp1)
     return output
 
 
@@ -40,7 +40,7 @@ def generate_3X_withnum(data, size, type, component=3):
         str0 = '-'
         tmp1['label'] = type
         tmp1.index = [str0.join(list(map(str, sorted(combination))))]
-        output.append(tmp1)
+        output = output.append(tmp1)
     return output
 
 # we use a kernal which we only focus on it's shape,
@@ -67,9 +67,9 @@ def generate_fixed_kernel(data,kernelsize=(2,28), strategy='replace'):
                             thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                             thechosenrow.iloc[:, (a+34):(b+34)] += data.iloc[j, (a+34):(b+34)].values
                             
-                        augrows.append(thechosenrow)
+                        augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        dataset.append(augrows) 
+        dataset = dataset.append(augrows) 
     return dataset
 
 
@@ -98,10 +98,10 @@ def generate_different_kernels(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2
                                 elif strategy == 'add':
                                     thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                          
-                            augrows.append(thechosenrow)
+                            augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
                             
-            dataset.append(augrows)  
+            dataset = dataset.append(augrows)  
     return dataset
 
 # same strategy, but fixed number
@@ -130,10 +130,10 @@ def generate_different_kernels_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),
                             elif strategy == 'add':
                                 thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                                 
-                        augrows.append(thechosenrow)
+                        augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
                         
-        dataset.append(augrows)
+        dataset = dataset.append(augrows)
     return dataset
 
 # use six fixed kernal to each lobe, but when it come to the type which has very few orginal data, we replace or add several lobe's data, not
@@ -174,10 +174,10 @@ def generate_different_kernels_combinations_for_different_type(data,kernelsize=(
                                     elif strategy == 'add':
                                         thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
                                         
-                            augrows.append(thechosenrow)
+                            augrows = augrows.append(thechosenrow)
                             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
                             
-        dataset.append(augrows)    
+        dataset = dataset.append(augrows)    
     return dataset
                      
 # muti-threading
@@ -245,8 +245,8 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         datatrain = dataset[x].iloc[:-testnum,:]
         datatest = dataset[x].iloc[-testnum:,:]
         
-        testdata.append(datatest)
-        validatedata.append(datatrain)
+        testdata = testdata.append(datatest)
+        validatedata = validatedata.append(datatrain)
         
     # open a thread
         if thread:
