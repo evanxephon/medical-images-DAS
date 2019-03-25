@@ -52,8 +52,8 @@ def generate_fixed_kernel(data,kernelsize=(2,28), strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     for i in range(len(data)):
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        augrows = pd.DataFrame(columns=data.columns)
         for j in range(len(data)):
+            augrows = pd.DataFrame(columns=data.columns)
             if j != i:
                 for k in range(horizontalsize):
                     for l in range(verticalsize):
@@ -69,7 +69,7 @@ def generate_fixed_kernel(data,kernelsize=(2,28), strategy='replace'):
                             
                         augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-        dataset = dataset.append(augrows) 
+            dataset = dataset.append(augrows) 
     return dataset
 
 
@@ -81,10 +81,8 @@ def generate_different_kernels(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2
         horizontalsize = district[x] - kernelsize[x][1] + 1
         verticalsize = 4 - kernelsize[x][0] + 1
         for i in range(len(data)):
-            
             thechosenrow = pd.DataFrame(data.iloc[i,:]).T
             augrows = pd.DataFrame(columns=data.columns)
-            
             for j in range(len(data)):
                 if j != i:
                     for k in range(horizontalsize):
@@ -271,7 +269,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
-    config('rawdata1sort.csv',
+    config('rawdata2sort.csv',
             function=generate_different_kernels,
             num=False,
             testnum=100,
@@ -280,11 +278,12 @@ if __name__ == '__main__':
             #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
-            kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(5)),
+            kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
-            savepath='/data/dataaugmentationinmedicalfield/data-accumulation-binary-replace-cv',
-            crossvalidation=True,
-            strategy='replace')
+            savepath='/data/dataaugmentationinmedicalfield/data-1/',
+            #crossvalidation=True,
+            thread=True,
+            strategy='add')
 
     '''config('rawdata1sort.csv',
            function=generate_different_kernels_combinations_for_different_type,

@@ -31,11 +31,22 @@ def getDummy(dataset):
     dataset = pd.get_dummies(dataset)
     return dataset
 
-def maketraindata(samplenum=None,sampletype=False,traindata=()):
+def maketraindata(samplenum=None,sampletype=False,binaryafter=False,traindata=()):
     # sample to get trainset (may not be a necessity)
     traindataset = pd.DataFrame()
+
+    if binaryafter:
+        for x in range(1,len(traindata)):
+            traindata[x]['label'] = 1
+        traindata = (traindata[0],traindata[1].append([traindata[2],traindata[3],traindata[4]]))
+
     for x in range(len(traindata)):
         traindatax = pd.read_csv(traindata[x])
+
+        for feature in ['sex','visit_age','scanner']:
+            if feature in traindatax.columns:
+                traindatax.drop(columns=feature,inplace=True)
+
         if sampletype == 'up':
             traindatax = upsample(traindatax,samplenum)
         elif sampletype == 'down':
@@ -58,7 +69,7 @@ def upsample(data,num):
 def downsample(data,num):
     return data.loc[np.random.choice(data.index,size=num),:]
 
-def config(batchsize,traindata,validatedata,testdata,classnum,onehot=True):
+def config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=False,onehot=True):
 
     # set the batchsize and the other things
     batch_size = batchsize
@@ -77,6 +88,18 @@ def config(batchsize,traindata,validatedata,testdata,classnum,onehot=True):
     for x in range(classnum):
         validatedatabalanced = validatedatabalanced.append(validatedata[validatedata['label'] == x].sample(500 // classnum ,replace=True))
     
+    for feature in ['sex','visit_age','scanner']:
+        if feature in validatedatabalanced.columns:
+            validatedatabalanced.drop(columns=feature,inplace=True) 
+
+    for feature in ['sex','visit_age','scanner']:
+        if feature in testdata.columns:
+            testdata.drop(columns=feature,inplace=True)
+
+    if binaryafter:
+        validatedata.loc[validatedata['label'] > 1, 'label'] = 1
+        testdata.loc[testdata['label'] > 1, 'label'] = 1
+
     traindata = MyDataset(traindata)
     validatedata = MyDataset(validatedatabalanced)
     testdata = MyDataset(testdata)
@@ -93,10 +116,10 @@ def config(batchsize,traindata,validatedata,testdata,classnum,onehot=True):
                                               shuffle=False)
     return train_loader,validate_loader,test_loader
 
-def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,datapath=False):
+def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,binaryafter=False,datapath=False):
     if datapath:
         os.chdir(datapath)    
-    traindata = maketraindata(samplenum,sampletype,traindata)
+    traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,traindata=traindata)
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
-    return config(batchsize,traindata,validatedata,testdata,classnum,onehot=False)
+    return config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=binaryafter,onehot=False)

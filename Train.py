@@ -8,7 +8,7 @@ import Dataset
 import os
 import pickle
 
-def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # binary or muti classification set
 
@@ -67,9 +67,13 @@ def config(shape=[100,100,100],classnum=2,learningrate=0.01,learningrateschema=o
     global validate_loader
     global relprop_loader
 
-    train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,datapath)
+    train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,binaryafter,datapath)
     
-    relprop_loader = torch.utils.data.DataLoader(dataset=Dataset.MyDataset(pd.read_csv(testdata)),
+    testdata = pd.read_csv(testdata)
+    for feature in ['sex','visit_age','scanner']:
+        if feature in testdata.columns:
+            testdata.drop(columns=feature,inplace=True)
+    relprop_loader = torch.utils.data.DataLoader(dataset=Dataset.MyDataset(testdata),
                                               batch_size=1,
                                               shuffle=False)
     
@@ -197,6 +201,7 @@ def test():
 def relprop():
 
     model.eval()
+
     relevance_scores = []
 
     for data, target in relprop_loader:
@@ -226,17 +231,18 @@ def relprop():
     
     
 if __name__ == '__main__':
-    config(shape=[100,100,100],
+    config(shape=[50,50,50,50,50,50,50],
            classnum=2,
+           binaryafter=False,
            learningrate=0.001,
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=30,
-           samplenum=False,
-           sampletype=False,
+           samplenum=200000,
+           sampletype='down',
            l1regularization=False,
            l2regularization=False,
-           cnn = False, #[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/aug4-1/',
+           cnn = False,#[[1,1,2,1,0]],
+           datapath='/data/dataaugmentationinmedicalfield/data-cv-re-2/',
            batchnorm=0.1,
            dropout=False)
