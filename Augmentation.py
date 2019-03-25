@@ -195,13 +195,13 @@ class outputthread(threading.Thread):
         print('onethreadstart')
         start = time.clock()
         if self.num and self.kernelsize:
-            data = self.function(self.data,self.kernelsize,self.num,strategy=strategy)
+            data = self.function(self.data,self.kernelsize,self.num,strategy=self.strategy)
         elif not self.num and not self.kernelsize:
-            data = self.function(self.data,strategy=strategy)
+            data = self.function(self.data,strategy=self.strategy)
         elif not self.kernelsize and self.num:
-            data = self.function(self.data,self.num,strategy=strategy)
+            data = self.function(self.data,self.num,strategy=self.strategy)
         elif self.kernelsize and not self.num:
-            data = self.function(self.data,self.kernelsize,strategy=strategy)
+            data = self.function(self.data,self.kernelsize,strategy=self.strategy)
         data.to_csv(f'{self.type}-{self.classnum}.csv',encoding=None,index=False)
         end = time.clock()
         print('onedatafinished')
