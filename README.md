@@ -70,7 +70,7 @@ We are applying Random Forest algorithm to our original data to make sure that a
 ### Modules.py & Utils.py
 对现有网络实现深度泰勒分解和相关度指数的两个基础库程序，以获得对输入矩阵中单个元素对最终预测结果的影响程度大小，进而实现对分类器的解释。  
 
-The fundamental function library of generating a heatmap of input matrix (which could be an interpretation of our prediciton), applying the algorithms of deep taylor decomposition or layer-wise relevance propagation. 
+The fundamental function library of generating a heatmap of input matrix (which could be an interpretation of our prediction), applying the algorithms of deep taylor decomposition or layer-wise relevance propagation. 
 
 ## Challenges and Solutions So Far
 ### Imbalanced Data
