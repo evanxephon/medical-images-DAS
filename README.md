@@ -72,6 +72,12 @@ We are applying Random Forest algorithm to our original data to make sure that a
 
 The fundamental function library of generating a heatmap of input matrix (which could be an interpretation of our prediction), applying the algorithms of deep taylor decomposition or layer-wise relevance propagation. 
 
+### Interpretation.py
+一种relevance score的实现，采用了Z+规则。
+
+### Visualization.py
+对relevance score的可视化展现，采用了灰度图的方式，颜色越深代表该输入元素对预测结果的影响越大。
+
 ## Challenges and Solutions So Far
 ### Imbalanced Data
 不平衡的数据集可能导致得到的分类器是Naive的，即预测结果始终为占比最多的类别，这确实是训练误差最小的分类器，同时如果测试集保持同样的分布，那么在该数据集上的准确率也会很高。但是对于不平衡的数据集，Accuracy准确率是一种非常片面的衡量标准，应该使用各个类别的Precision精准率和Recall召回率来衡量。
@@ -128,6 +134,139 @@ BatchNorm也是被用来提高训练速度的。但是和Dropout的相性不好�
 ## Validation
 ### Cross Validation
 为了减少认为划分数据带来的随机性，进行交叉验证，同时因为算力的限制，不使用留一验证，K折验证等等方式，而使用不完全的留N验证，即划分N和X-N的组合，只取一部分来进行分类器的训练。做交叉验证的一个好处是让本来就不多的数据得到充分的利用，我们能将更大比例的数据用于训练集的生成。
+
+## Interpretation  
+### Z+ rule's implementation  
+#### the explaination of the function  
+* layers：  
+hidden layer and output layer's dimension, it's a array  
+* tensor_of_each_layer:    
+has every layer's tensor in it，it's a 2-d array，after the reverse process，the first tensor is of the layer before the output layer(the output layer's tensor is view as the original R score, and is keeped in 'current_relevance_score')  
+* current_relevance_score:    
+is for keeping the current R score, and at the beginning it stored the R score of the output layer, which is also the output layer's tensor, a array  
+* parameters:   
+stored every layer's parameters, also a reversed 2-d darray  
+* relevance_score_of_each_layer:   
+stored every layer's R score, at the beginning it stored score of the output layer,a 2-d array
+
+P.S  
+I have some questions about the original R score. It is the output or the output before the activation, also a vector contains only positive values. When we use our model for classification, we compare the values in this vector and choose the biggest the values, and check it's position, and know the predicion. So **shall we remove anything but the maxium value** in this vector, and **set them zero**, cauce we only want to know the contribution to the right answer. I am implementing it in this way, but if it's wrong, I could easily change to the other way.  
+
+** Here is the code:**
+
+```python
+import numpy as np
+def zplus(layers, tensor_of_each_layer, current_relevance_score, parameters, relevance_score_of_each_layer):
+```
+
+```python
+    for a in range(len(layers)):
+```
+
+first in every iteration, we assume the input layer dimension is i and output layer dimension is j
+
+```python
+        positive_weight = np.abs(parameters[a])
+```
+
+in the z+ rule, we need the parameters to be positive
+
+```python
+        sum_posi_weights = np.dot(positive_weight, tensor_of_each_layer[a]) + 1e-9
+```
+
+after this, we get a j-dim-column-vector, adding the 1e-9 to keep the precision  
+j X i-matrix means those parameters between these two layer
+
+     j X i-matrix   X  i-dim-column-vector   =   j-dim-column-vector
+         
+       @@@@@                    #         $
+       @@@@@                    #         $
+       @@@@@    X (matrix muti) #    =    $ 
+       @@@@@                    #         $
+                                #
+       
+```python
+        s_coeffecient = relevance_score / sum_posi_weights
+```
+
+this is a numpy element-wise operation, we'll get a j-dim-column-vector           
+
+     j-dim-column-vector  /   j-dim-column-vector    =    j-dim-column-vector
+     
+     $       /                       &                    %
+     $       /(element-wise divide)  &               =    %
+     $       /                       &                    %
+     $       /                       &                    %
+                   
+     
+```python
+        c_coeffecient = np.dot(positive_weight.T, s_coeffecient)
+```
+
+    T mean transposition turn j X i into i X j
+    s_coeffecient is a j-dim-column-vector
+    
+    i X j-matrix  X   j-dim-column-vector     =    i-dim-column-vector
+    
+    ####                           $                  &
+    ####                           $                  &
+    ####         X (matrix muti)   $          =       &
+    ####                           $                  &
+    ####                                              &
+     
+    
+```python
+        relevance_score = tensor_of_each_layer[a] * c_coeffecient
+```
+
+we get the previous layer's relevance score by using a numpy element-wise operation again   
+
+    i-dim-column-vector   *   i-dim-column-vector   =   i-dim-column-vector
+    
+    &          X                  %                   @
+    &          X    element-wise  %                   @
+    &          X    muti          %            =      @ 
+    &          X                  %                   @
+    &          X                  %                   @
+    
+```python
+        relevance_score_of_each_layer[f'l{len(layers) - a}-layer-relevance-score'] = relevance_score           
+    return relevance_score_of_each_layer
+```
+
+**we get a i-dim-column-vector which is the R score of the input layer in this iteration**
+
+
+## Visualization
+we use the python module--- pickle to restore the R score
+you could use code like this, to get the data from **relevance_scores.pk**
+
+```python
+    with open('relevance_scores.pk','rb') as f:
+        relevance_scores = pickle.load(f)
+```
+
+    the data contains every correct prediction's R score of each layer, the data structure is a list of some dict
+    you should use code like below to get every correct prediction's R score
+    
+```python
+for relevance_score in data:
+```
+
+and than deal with every dict
+
+```python
+    inputdata = relevance_score['data'] 
+    label = relevance_score['label']
+    
+    output_layer_relevance_score = relevance_score['score']['output-layer-relevance-score']
+    l4_layer_relevance_score = relevance_score['score']['l4-layer-relevance-score']
+    l3_layer_relevance_score = relevance_score['score']['l3-layer-relevance-score']
+    l2_layer_relevance_score = relevance_score['score']['l2-layer-relevance-score']
+    l1_layer_relevance_score = relevance_score['score']['l1-layer-relevance-score']
+```
+
 # To be continued
 
 
