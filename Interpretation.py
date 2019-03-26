@@ -1,7 +1,7 @@
 import numpy as np
 
 # z+ rule's implementation
-def rplus(layers, tensor_of_each_layer, current_relevance_score, parameters, relevance_score_of_each_layer):
+def zplus(layers, tensor_of_each_layer, current_relevance_score, parameters, relevance_score_of_each_layer):
 
 # caculate each layer's relevance score , 
 # assuming the input layer dimension is i and output layer dimension is j
