@@ -231,7 +231,7 @@ def relprop():
     
     
 if __name__ == '__main__':
-    config(shape=[50,50,50,50,50,50,50],
+    config(shape=[50,50,50,50],
            classnum=2,
            binaryafter=False,
            learningrate=0.001,
@@ -243,6 +243,6 @@ if __name__ == '__main__':
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/data-cv-re-2/',
+           datapath='/data/dataaugmentationinmedicalfield/data-3/',
            batchnorm=0.1,
            dropout=False)

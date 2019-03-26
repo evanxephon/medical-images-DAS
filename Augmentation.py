@@ -280,8 +280,8 @@ if __name__ == '__main__':
             #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
-            savepath='/data/dataaugmentationinmedicalfield/data-1/',
-            #crossvalidation=True,
+            savepath='/data/dataaugmentationinmedicalfield/data-3/',
+            crossvalidation=True,
             thread=True,
             strategy='add')
 
