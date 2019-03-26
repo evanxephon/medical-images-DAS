@@ -35,11 +35,6 @@ def maketraindata(samplenum=None,sampletype=False,binaryafter=False,traindata=()
     # sample to get trainset (may not be a necessity)
     traindataset = pd.DataFrame()
 
-    if binaryafter:
-        for x in range(1,len(traindata)):
-            traindata[x]['label'] = 1
-        traindata = (traindata[0],traindata[1].append([traindata[2],traindata[3],traindata[4]]))
-
     for x in range(len(traindata)):
         traindatax = pd.read_csv(traindata[x])
 
@@ -54,6 +49,10 @@ def maketraindata(samplenum=None,sampletype=False,binaryafter=False,traindata=()
 
         print(f'type{x} has {len(traindatax)} data')
         traindataset = traindataset.append(traindatax) 
+
+    if binaryafter:
+        traindataset.loc[traindataset['label'] > 1 ,'label'] = 1 
+
     return  traindataset
 
 # fill the NaN with mean value or something else
@@ -120,6 +119,9 @@ def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,cla
     if datapath:
         os.chdir(datapath)    
     traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,traindata=traindata)
+    if binaryafter:
+        testdata = 'testdata-muti.csv'
+        validatedata = 'validatedata-muti.csv'
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
     return config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=binaryafter,onehot=False)

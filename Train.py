@@ -52,6 +52,14 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
 
     global model
     
+    if datapath:
+        os.chdir(datapath)    
+    testdata = pd.read_csv(testdata)
+
+    if binaryafter:
+        classnum = 2
+        testdata.loc[testdata['label'] > 1, 'label'] = 1
+   
     model = Network.Net(shape,classnum,batchnorm=batchnorm,dropout=dropout,cnn=cnn)
         
     model.cuda()
@@ -69,10 +77,10 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
 
     train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,binaryafter,datapath)
     
-    testdata = pd.read_csv(testdata)
     for feature in ['sex','visit_age','scanner']:
         if feature in testdata.columns:
             testdata.drop(columns=feature,inplace=True)
+
     relprop_loader = torch.utils.data.DataLoader(dataset=Dataset.MyDataset(testdata),
                                               batch_size=1,
                                               shuffle=False)
@@ -232,17 +240,17 @@ def relprop():
     
 if __name__ == '__main__':
     config(shape=[50,50,50,50],
-           classnum=2,
-           binaryafter=False,
+           classnum=5,
+           binaryafter=True,
            learningrate=0.001,
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=10,
-           samplenum=200000,
-           sampletype='down',
+           samplenum=False,
+           sampletype=False,
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/data-cv-re-2/',
+           datapath='/data/dataaugmentationinmedicalfield/kernal_comb1/',
            batchnorm=0.1,
            dropout=False)
