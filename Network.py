@@ -100,7 +100,7 @@ class Net(nn.Module):
         
         relevance_score_of_each_layer = {}
         
-        relevance_score = self.relevance_score_output_layer
+        current_relevance_score = self.relevance_score_output_layer
         
         self.tensor_of_each_layer.reverse()
         
