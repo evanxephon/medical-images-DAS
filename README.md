@@ -204,8 +204,8 @@ this is a numpy element-wise operation, we'll get a j-dim-column-vector
         c_coeffecient = np.dot(positive_weight.T, s_coeffecient)
 ```
 
-    T mean transposition turn j X i into i X j
-    s_coeffecient is a j-dim-column-vector
+T mean transposition turn j X i into i X j  
+s_coeffecient is a j-dim-column-vector  
     
     i X j-matrix  X   j-dim-column-vector     =    i-dim-column-vector
     
@@ -247,8 +247,8 @@ you could use code like this, to get the data from **relevance_scores.pk**
         relevance_scores = pickle.load(f)
 ```
 
-    the data contains every correct prediction's R score of each layer, the data structure is a list of some dict
-    you should use code like below to get every correct prediction's R score
+the data contains every correct prediction's R score of each layer, the data structure is a list of some dict  
+you should use code like below to get every correct prediction's R score
     
 ```python
 for relevance_score in data:
