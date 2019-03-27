@@ -53,13 +53,8 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
     global model
     
     if datapath:
-        os.chdir(datapath)    
-    testdata = pd.read_csv(testdata)
-
-    if binaryafter:
-        classnum = 2
-        testdata.loc[testdata['label'] > 1, 'label'] = 1
-   
+        os.chdir(datapath)
+    
     model = Network.Net(shape,classnum,batchnorm=batchnorm,dropout=dropout,cnn=cnn)
         
     model.cuda()
@@ -77,6 +72,12 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
 
     train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,binaryafter,datapath)
     
+    testdata = pd.read_csv(testdata)
+
+    if binaryafter:
+        classnum = 2
+        testdata.loc[testdata['label'] > 1, 'label'] = 1
+
     for feature in ['sex','visit_age','scanner']:
         if feature in testdata.columns:
             testdata.drop(columns=feature,inplace=True)
@@ -90,7 +91,7 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
     for i in range(epoch):
         train(i,l1regularization=l1regularization,l2regularization=l2regularization)
         validate()
-        accuracy.append(test().cpu().numpy())
+        accuracy.append(test(classnum).cpu().numpy())
     
     accuracy = pd.DataFrame(accuracy).T
     print(accuracy)
@@ -166,19 +167,26 @@ def validate():
         validate_loss, correct, len(validate_loader.dataset),
         100. * correct / len(validate_loader.dataset)))
 
-def test():
+def test(classnum=5):
     
     model.eval()
     
     test_loss = 0
     correct = 0
+    total = 0
+
+    target_num = torch.zeros((1,classnum))
+    predict_num = torch.zeros((1,classnum))
+    acc_num = torch.zeros((1,classnum))
 
     for data, target in test_loader:
         
         with torch.no_grad():
             data, target = Variable(data), Variable(target)
+        
         data = data.cuda()
         target = target.cuda()
+
         output = model(data)
         
         # calculate the sum of loss for testset
@@ -187,15 +195,39 @@ def test():
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
   
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+        correct += pred.eq(target.data.view_as(pred)).sum()
         
+        _, predicted = torch.max(output.data, 1)
         
+        pre_mask = torch.zeros(output.size()).scatter_(1, predicted.view(-1, 1), 1.)
+        predict_num += pre_mask.sum(0)
+        tar_mask = torch.zeros(output.size()).scatter_(1, target.data.view(-1, 1), 1.)
+        target_num += tar_mask.sum(0)
+        acc_mask = pre_mask*tar_mask
+        acc_num += acc_mask.sum(0)
+
+    
+    recall = acc_num/target_num
+    precision = acc_num/predict_num
+    F1 = 2*recall*precision/(recall+precision)
+    accuracy = acc_num.sum(1)/target_num.sum(1)
+
+    recall = (recall.cpu().numpy()[0]*100).round(3)
+    precision = (precision.cpu().numpy()[0]*100).round(3)
+    F1 = (F1.cpu().numpy()[0]*100).round(3)
+    accuracy = (accuracy.cpu().numpy()[0]*100).round(3)
+
+    print('recall'," ".join('%s' % id for id in recall))
+    print('precision'," ".join('%s' % id for id in precision))
+    print('F1'," ".join('%s' % id for id in F1))
+    print('accuracy',accuracy)
+    
     test_loss /= len(test_loader.dataset)
     # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
-    
+         test_loss, correct, len(test_loader.dataset),
+         100. * correct / len(test_loader.dataset))) 
+   
     # record the correct predict type
     '''pred = pred.cpu().numpy()
     pred = pd.DateFrame(pred)
@@ -240,9 +272,9 @@ def relprop():
     
 if __name__ == '__main__':
     config(shape=[50,50,50,50],
-           classnum=5,
-           binaryafter=True,
-           learningrate=0.001,
+           classnum=2,
+           binaryafter=False,
+           learningrate=0.1,
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=10,
@@ -251,6 +283,6 @@ if __name__ == '__main__':
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/kernal_comb1/',
+           datapath='/data/dataaugmentationinmedicalfield/data-cv-re-2/',
            batchnorm=0.1,
            dropout=False)

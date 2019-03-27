@@ -122,6 +122,8 @@ def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,cla
     if binaryafter:
         testdata = 'testdata-muti.csv'
         validatedata = 'validatedata-muti.csv'
+
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
+
     return config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=binaryafter,onehot=False)
