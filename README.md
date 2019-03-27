@@ -135,17 +135,17 @@ BatchNorm也是被用来提高训练速度的。但是和Dropout的相性不好�
 ### Cross Validation
 为了减少认为划分数据带来的随机性，进行交叉验证，同时因为算力的限制，不使用留一验证，K折验证等等方式，而使用不完全的留N验证，即划分N和X-N的组合，只取一部分来进行分类器的训练。做交叉验证的一个好处是让本来就不多的数据得到充分的利用，我们能将更大比例的数据用于训练集的生成。
 
-## Interpretation  
-### Z+ rule's implementation  
+## Interpretation of our network 
+### Implementation of Z+ rule of Layer-wise Relevance Propagation (LRP) 
 #### the explaination of the function  
 * layers：  
-hidden layer and output layer's dimension, it's a array  
+hidden layer and output layer's dimension, it's an array  
 * tensor_of_each_layer:    
 has every layer's tensor in it，it's a 2-d array，after the reverse process，the first tensor is of the layer before the output layer(the output layer's tensor is view as the original R score, and is keeped in 'current_relevance_score')  
 * current_relevance_score:    
-is for keeping the current R score, and at the beginning it stored the R score of the output layer, which is also the output layer's tensor, a array  
+is for keeping the current R score, and at the beginning it stored the R score of the output layer, which is also the output layer's tensor, an array  
 * parameters:   
-stored every layer's parameters, also a reversed 2-d darray  
+stored every layer's parameters, also a reversed 2-d array  
 * relevance_score_of_each_layer:   
 stored every layer's R score, at the beginning it stored score of the output layer,a 2-d array
 
