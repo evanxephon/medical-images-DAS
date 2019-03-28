@@ -4,7 +4,7 @@ Implementation of some of strategies on data augmentation in medical field
 ## Background
 医疗领域使用深度学习的一个问题是数据量太少。图像数据的数据增强已有很实用的策略并被广泛使用，但是非图像数据的数据增强还没有。而我们现在有的数据比较特殊，它不是图像数据，但是数据之间仍存在位置上的关系。我们为这类数据设计了几种数据增强策略，并通过实验证明它们是否有效。  
   
-The lack of data is an essential problem in the field of medical analysis. While the technique of data augmentation has already been wildly applied into image processing, there is few instances of non-image data augmention application. What we deal within this project is the data of some residual scores of raw MRI image. Every single entry of the data is a sort of measurement of a certain region of brain so that the data itself remains the relationship between different lobes of brain. To recognise the hidden pattern of the data by trainning our classical DNN as a classifier, we proposed several different strategies of data augmentation so we can have sufficient trainning data.
+The lack of data is an essential problem in the field of medical analysis. While the technique of data augmentation has already been wildly applied into image processing, there is few instances of non-image data augmentation application. What we deal within this project is the data of some residual scores of raw MRI image. Every single entry of the data is a sort of measurement of a certain region of brain so that the data itself remains the relationship between different lobes of brain. To recognise the hidden pattern of the data by trainning our classical DNN as a classifier, we proposed several different strategies of data augmentation so we can have sufficient trainning data.
 
 ## The Data 
 数据是人脑MRI扫描结果，一共有34个扫描的区域，被扫描后每个区域会给出一个数值，每个患者也就是一个记录给出TA四年的数据，也就是一共有34 * 4 个features，数据的label为一个分类结果，一共有五种，在这里就标为ABCDE。34个扫描区域还被分为6个lobes，每个lobes包括不同的区域。还有三个额外的feature包括患者性别，设备品牌等。  
@@ -135,17 +135,17 @@ BatchNorm也是被用来提高训练速度的。但是和Dropout的相性不好�
 ### Cross Validation
 为了减少认为划分数据带来的随机性，进行交叉验证，同时因为算力的限制，不使用留一验证，K折验证等等方式，而使用不完全的留N验证，即划分N和X-N的组合，只取一部分来进行分类器的训练。做交叉验证的一个好处是让本来就不多的数据得到充分的利用，我们能将更大比例的数据用于训练集的生成。
 
-## Interpretation  
-### Z+ rule's implementation  
+## Interpretation of our network 
+### Implementation of Z+ rule of Layer-wise Relevance Propagation (LRP) 
 #### the explaination of the function  
 * layers：  
-hidden layer and output layer's dimension, it's a array  
+hidden layer and output layer's dimension, it's an array  
 * tensor_of_each_layer:    
 has every layer's tensor in it，it's a 2-d array，after the reverse process，the first tensor is of the layer before the output layer(the output layer's tensor is view as the original R score, and is keeped in 'current_relevance_score')  
 * current_relevance_score:    
-is for keeping the current R score, and at the beginning it stored the R score of the output layer, which is also the output layer's tensor, a array  
+is for keeping the current R score, and at the beginning it stored the R score of the output layer, which is also the output layer's tensor, an array  
 * parameters:   
-stored every layer's parameters, also a reversed 2-d darray  
+stored every layer's parameters, also a reversed 2-d array  
 * relevance_score_of_each_layer:   
 stored every layer's R score, at the beginning it stored score of the output layer,a 2-d array
 
