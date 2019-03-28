@@ -57,18 +57,20 @@ def maketraindata(samplenum=None,sampletype=False,binaryafter=False,traindata=()
 
 # fill the NaN with mean value or something else
 def fillnan(data):
+
     for column in list(data.columns[data.isnull().sum() > 0]):
         mean_val = feature[column].mean()
         data[column].fillna(mean_val, inplace=True)
+
     return data
 
 def upsample(data,num):
     return data.sample(num,replace=True)
 
 def downsample(data,num):
-    return data.loc[np.random.choice(data.index,size=num),:]
+    return data.sample(num)
 
-def config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=False,onehot=True):
+def config(batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter=False,onehot=True):
 
     # set the batchsize and the other things
     batch_size = batchsize
@@ -89,15 +91,20 @@ def config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=False,
     
     for feature in ['sex','visit_age','scanner']:
         if feature in validatedatabalanced.columns:
-            validatedatabalanced.drop(columns=feature,inplace=True) 
+            validatedatabalanced.drop(columns=feature,inplace=True)
 
-    for feature in ['sex','visit_age','scanner']:
         if feature in testdata.columns:
             testdata.drop(columns=feature,inplace=True)
 
     if binaryafter:
         validatedata.loc[validatedata['label'] > 1, 'label'] = 1
         testdata.loc[testdata['label'] > 1, 'label'] = 1
+
+    if classnums:
+        for i in range(5):
+            if i not in classnums:
+                validatedata = validatedata.loc[~ validatedata['label'] == i]
+                testdata = testdata.loc[~ testdata['label'] == i]  
 
     traindata = MyDataset(traindata)
     validatedata = MyDataset(validatedatabalanced)
@@ -113,12 +120,19 @@ def config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=False,
     test_loader = torch.utils.data.DataLoader(dataset=testdata,
                                               batch_size=batch_size,
                                               shuffle=False)
-    return train_loader,validate_loader,test_loader
+    relprop_loader = torch.utils.data.DataLoader(dataset=testdata,
+                                              batch_size=1,
+                                              shuffle=False)
 
-def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,binaryafter=False,datapath=False):
+    return train_loader,validate_loader,test_loader,relprop_loader
+
+def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter=False,datapath=False):
+
     if datapath:
-        os.chdir(datapath)    
+        os.chdir(datapath) 
+   
     traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,traindata=traindata)
+
     if binaryafter:
         testdata = 'testdata-muti.csv'
         validatedata = 'validatedata-muti.csv'
@@ -126,4 +140,4 @@ def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,cla
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
 
-    return config(batchsize,traindata,validatedata,testdata,classnum,binaryafter=binaryafter,onehot=False)
+    return config(batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter=binaryafter,onehot=False)

@@ -8,13 +8,21 @@ import Dataset
 import os
 import pickle
 
-def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
     # binary or muti classification set
 
     traindata = []
 
-    if classnum > 2:
+    if classnums:
+
+        testdata = 'testdata-muti.csv'
+        validatedata = 'validatedata-muti.csv'
+
+        for i in classnums:
+            traindata.append(f'{i}-muti.csv')
+
+    elif classnum > 2:
 
         testdata = 'testdata-muti.csv'
         validatedata = 'validatedata-muti.csv'
@@ -62,7 +70,7 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
     
     # SGD plus momentum
     global optimizer 
-    optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.5)#, weight_decay=1e-5)
+    optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.2)#, weight_decay=1e-5)
 
     # get the dataloader
     global train_loader
@@ -70,21 +78,7 @@ def config(shape=[100,100,100],classnum=2,binaryafter=False,learningrate=0.01,le
     global validate_loader
     global relprop_loader
 
-    train_loader, validate_loader, test_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,binaryafter,datapath)
-    
-    testdata = pd.read_csv(testdata)
-
-    if binaryafter:
-        classnum = 2
-        testdata.loc[testdata['label'] > 1, 'label'] = 1
-
-    for feature in ['sex','visit_age','scanner']:
-        if feature in testdata.columns:
-            testdata.drop(columns=feature,inplace=True)
-
-    relprop_loader = torch.utils.data.DataLoader(dataset=Dataset.MyDataset(testdata),
-                                              batch_size=1,
-                                              shuffle=False)
+    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter,datapath)
     
     accuracy = []
  
@@ -110,11 +104,14 @@ def train(epoch,l1regularization=None,l2regularization=None):
         target = target.cuda()
         
         l1_regularization, l2_regularization = torch.tensor(0), torch.tensor(0)
-        # set the former batch's gradient value zero
+        # set the former batch's gradient value zeroi
+
         optimizer.zero_grad()
         output = model(data)
+
         # lossfunction: cross entropy,we use NLLLoss here, Negative Log Likelihood
         # cause we take the log of the output tensor before
+
         loss = F.nll_loss(output, target)
         
         l1_regularization = 0
@@ -129,10 +126,12 @@ def train(epoch,l1regularization=None,l2regularization=None):
                     l1_regularization += torch.norm(param, 1)
                 if l2regularization:
                     l2_regularization += torch.norm(param, 2)
+
         loss = loss + l1lambda*l1_regularization + l2lambda*l2_regularization
 
         loss.cuda()
         loss.backward()
+
         # update weights 
         optimizer.step()
 
@@ -272,17 +271,18 @@ def relprop():
     
 if __name__ == '__main__':
     config(shape=[50,50,50,50],
-           classnum=2,
+           classnum=5,
+           classnums=False,
            binaryafter=False,
-           learningrate=0.1,
+           learningrate=0.01,
            learningrateschema=optim.SGD,
            batchsize=128,
-           epoch=10,
+           epoch=30,
            samplenum=False,
            sampletype=False,
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/data-cv-re-2/',
+           datapath='/data/dataaugmentationinmedicalfield/crossvalidation-batch-1-8/',
            batchnorm=0.1,
            dropout=False)
