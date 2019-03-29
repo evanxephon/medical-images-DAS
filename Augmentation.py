@@ -205,12 +205,7 @@ class outputthread(threading.Thread):
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidation=False,thread=False,strategy='replace'):
-    # choose the data saving path
-    if savepath:
-        if not os.path.isdir(savepath):
-            os.mkdir(savepath)
-        os.chdir(savepath)
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidatesimple=1,crossvalidatekfold=1,thread=False,strategy='replace'):
     
     rawdata = pd.read_csv('/data/dataaugmentationinmedicalfield/'+data)
     testdata = pd.DataFrame(columns=rawdata.columns)
@@ -234,39 +229,69 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         classnum = 'muti'
         
     # cross validation
-    if crossvalidation:
-        for x in range(len(dataset)):
-            dataset[x] = shuffle(dataset[x])
-                        
-    # choose the strategy generate num(optional) kernel size(optional)                        
-    for x in range(len(dataset)):  
-        datatrain = dataset[x].iloc[:-testnum,:]
-        datatest = dataset[x].iloc[-testnum:,:]
-        
-        testdata = testdata.append(datatest)
-        validatedata = validatedata.append(datatrain)
-        
-    # open a thread
-        if thread:
-            if kernelsize:
-                thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
-            else:
-                thread = outputthread(function,x,datatrain,num,classnum=classnum,strategy=strategy)
-            thread.start()
-        else:
-            if num and kernelsize:
-                data = function(datatrain,kernelsize[x],num,strategy=strategy)
-            elif not num and not kernelsize:
-                data = function(datatrain,strategy=strategy)
-            elif not kernelsize and num:
-                data = function(datatrain,num,strategy=strategy)
-            elif kernelsize and not num:
-                data = function(datatrain,kernelsize[x],strategy=strategy)
-            data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
-        
-    # save the testdata
-    testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
-    validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
+    
+    for i in range(crossvalidatesimple):
+        for j in range(crossvalidatekfold):
+            if crossvalidatesimple != 1:
+                for x in range(len(dataset)):
+                    dataset[x] = shuffle(dataset[x])
+                filedir = savepath + 'i'
+                testnumhead = testnum
+                
+                                
+            if crossvalidatekfold != 1:
+                testnumhead = 505 // kfold
+                testnumtail = 0
+                filedir = savepath + 'j'
+                
+            # choose the strategy generate num(optional) kernel size(optional)                        
+            for x in range(len(dataset)):
+                
+                datatrainhead = dataset[x].iloc[:-testnumhead,:]
+                
+                if crossvalidatekfold != 1 and j != 0:
+                    datatraintail = dataset[x].iloc[-testnumtail:,:]
+                else:
+                    datatraintail = pd.DataFrame()
+                datatrain = datatrainhead.append(datatraintail)
+                
+                if testnumtail != 0:
+                    datatest = dataset[x].iloc[-testnumhead:-testnumtail,:]
+                else:
+                    datatest = dataset[x].iloc[-testnumhead:,:]
+
+                testdata = testdata.append(datatest)
+                validatedata = validatedata.append(datatrain)
+                
+                if crossvalidatekfold != 1:
+                    testnumhead += (505 // kfold)
+                    testnumtail += (505 // kfold)
+
+                # choose the data saving path
+                if not os.path.isdir(savepath):
+                    os.mkdir(savepath)
+                os.chdir(savepath)
+                # open a thread
+                if thread:
+                    if kernelsize:
+                        thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
+                    else:
+                        thread = outputthread(function,x,datatrain,num,classnum=classnum,strategy=strategy)
+                    thread.start()
+                else:
+                    if num and kernelsize:
+                        data = function(datatrain,kernelsize[x],num,strategy=strategy)
+                    elif not num and not kernelsize:
+                        data = function(datatrain,strategy=strategy)
+                    elif not kernelsize and num:
+                        data = function(datatrain,num,strategy=strategy)
+                    elif kernelsize and not num:
+                        data = function(datatrain,kernelsize[x],strategy=strategy)
+                    data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
+
+                # save the testdata
+                testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+                validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
     config('rawdata2sort.csv',
@@ -281,9 +306,11 @@ if __name__ == '__main__':
             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
             savepath='/data/dataaugmentationinmedicalfield/data-3/',
+            crossvalidatesimple=1,
+            crossvalidatekfold=1,
             crossvalidation=True,
             thread=True,
-            strategy='add')
+            strategy='replace')
 
     '''config('rawdata1sort.csv',
            function=generate_different_kernels_combinations_for_different_type,
