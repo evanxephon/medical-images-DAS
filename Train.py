@@ -78,7 +78,7 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
     global validate_loader
     global relprop_loader
 
-    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter,datapath)
+    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum=samplenum,sampletype=sampletype,batchsize=batchsize,traindata=traindata,validatedata=validatedata,testdata=testdata,classnum=classnum,classnums=classnums,binaryafter=binaryafter,datapath=datapath)
     
     accuracy = []
  
@@ -274,7 +274,7 @@ if __name__ == '__main__':
            classnum=5,
            classnums=False,
            binaryafter=False,
-           learningrate=0.01,
+           learningrate=0.001,
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=30,

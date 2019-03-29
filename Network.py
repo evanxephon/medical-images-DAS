@@ -5,10 +5,10 @@ import numpy as np
 import Interpretation
 
 class Net(nn.Module):
-    #layers is array that contain 3 element，they are l1，l2，l3's input size，l4's output size is 5 (5 types)
-    def __init__(self,layers=[],classnum=5,component=1,batchnorm=False,dropout=False,cnn=False):
+    #layers is array that contain 3 element, they are ll,l2,l3's input size,l4's output size is 5 (5 types)
+    def __init__(self,layers=[],classnum=2,component=1,batchnorm=False,dropout=False,cnn=False):
         super(Net, self).__init__()
-        # the input size districts 34 *years 4 + 5(extra features after onehotilized)
+        # the input size districts 34 *years 4 + 5(extra features after onehotilized if have)
         
         self.relevance_score_output_layer = None
         self.tensor_of_each_layer = []

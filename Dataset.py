@@ -31,7 +31,7 @@ def getDummy(dataset):
     dataset = pd.get_dummies(dataset)
     return dataset
 
-def maketraindata(samplenum=None,sampletype=False,binaryafter=False,traindata=()):
+def maketraindata(samplenum=None,sampletype=False,binaryafter=False,classnums=False,traindata=()):
     # sample to get trainset (may not be a necessity)
     traindataset = pd.DataFrame()
 
@@ -49,6 +49,10 @@ def maketraindata(samplenum=None,sampletype=False,binaryafter=False,traindata=()
 
         print(f'type{x} has {len(traindatax)} data')
         traindataset = traindataset.append(traindatax) 
+
+    if classnums:
+        for i in range(len(classnums)):
+            traindataset.loc[traindataset['label'] == classnums[i], 'label'] = i
 
     if binaryafter:
         traindataset.loc[traindataset['label'] > 1 ,'label'] = 1 
@@ -103,8 +107,14 @@ def config(batchsize,traindata,validatedata,testdata,classnum,classnums,binaryaf
     if classnums:
         for i in range(5):
             if i not in classnums:
-                validatedata = validatedata.loc[~ validatedata['label'] == i]
-                testdata = testdata.loc[~ testdata['label'] == i]  
+
+                validatedata = validatedata.loc[validatedata['label'] != i]
+                testdata = testdata.loc[testdata['label'] != i]
+        for i in range(len(classnums)):
+
+            validatedata.loc[validatedata['label'] == classnums[i], 'label'] = i
+            testdata.loc[testdata['label'] == classnums[i], 'label'] = i
+  
 
     traindata = MyDataset(traindata)
     validatedata = MyDataset(validatedatabalanced)
@@ -131,7 +141,7 @@ def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,cla
     if datapath:
         os.chdir(datapath) 
    
-    traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,traindata=traindata)
+    traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,classnums=classnums,traindata=traindata)
 
     if binaryafter:
         testdata = 'testdata-muti.csv'
