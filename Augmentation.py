@@ -208,8 +208,6 @@ class outputthread(threading.Thread):
 def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidatesimple=1,crossvalidatekfold=1,thread=False,strategy='replace'):
     
     rawdata = pd.read_csv('/data/dataaugmentationinmedicalfield/'+data)
-    testdata = pd.DataFrame(columns=rawdata.columns)
-    validatedata = pd.DataFrame(columns=rawdata.columns)
     
     data0 = rawdata[rawdata['label'] == 0]
     data1 = rawdata[rawdata['label'] == 1]
@@ -232,17 +230,21 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     
     for i in range(crossvalidatesimple):
         for j in range(crossvalidatekfold):
+
+            testdata = pd.DataFrame(columns=rawdata.columns)
+            validatedata = pd.DataFrame(columns=rawdata.columns)
+
             if crossvalidatesimple != 1:
                 for x in range(len(dataset)):
                     dataset[x] = shuffle(dataset[x])
-                filedir = savepath + 'i'
+                filedir = savepath + f'{i}'
                 testnumhead = testnum
-                
+                testnumtail = 0 
                                 
             if crossvalidatekfold != 1:
-                testnumhead = 505 // kfold
+                testnumhead = 505 // kfold // 2
                 testnumtail = 0
-                filedir = savepath + 'j'
+                filedir = savepath + f'{j}'
                 
             # choose the strategy generate num(optional) kernel size(optional)                        
             for x in range(len(dataset)):
@@ -264,13 +266,14 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
                 validatedata = validatedata.append(datatrain)
                 
                 if crossvalidatekfold != 1:
-                    testnumhead += (505 // kfold)
-                    testnumtail += (505 // kfold)
+                    testnumhead += (505 // kfold // 2)
+                    testnumtail += (505 // kfold // 2)
 
                 # choose the data saving path
-                if not os.path.isdir(savepath):
-                    os.mkdir(savepath)
-                os.chdir(savepath)
+                if not os.path.isdir(filedir):
+                    os.mkdir(filedir)
+                os.chdir(filedir)
+
                 # open a thread
                 if thread:
                     if kernelsize:
@@ -289,15 +292,15 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
                         data = function(datatrain,kernelsize[x],strategy=strategy)
                     data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
 
-                # save the testdata
-                testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
-                validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
+            # save the testdata
+            testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+            validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
     config('rawdata2sort.csv',
             function=generate_different_kernels,
             num=False,
-            testnum=100,
+            testnum=50,
             #kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
             #            ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
@@ -305,11 +308,10 @@ if __name__ == '__main__':
             #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
-            savepath='/data/dataaugmentationinmedicalfield/data-3/',
-            crossvalidatesimple=1,
+            savepath='/data/dataaugmentationinmedicalfield/crossvali-add-',
+            crossvalidatesimple=10,
             crossvalidatekfold=1,
-            crossvalidation=True,
-            thread=True,
+            thread=False,
             strategy='replace')
 
     '''config('rawdata1sort.csv',
