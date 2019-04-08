@@ -93,6 +93,9 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
     
     # relevance score computation
     relprop()
+    
+    # restore the model 
+    torch.save(model.state_dict(), datapath)
          
 def train(epoch,l1regularization=None,l2regularization=None):
     
@@ -270,7 +273,8 @@ def relprop():
     
     
 if __name__ == '__main__':
-    config(shape=[50,50,50,50],
+    for i in range(8):
+        config(shape=[50,50,50,50],
            classnum=5,
            classnums=False,
            binaryafter=False,
@@ -278,11 +282,11 @@ if __name__ == '__main__':
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=30,
-           samplenum=False,
-           sampletype=False,
+           samplenum=200000,
+           sampletype='down',
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath='/data/dataaugmentationinmedicalfield/crossvalidation-batch-1-8/',
+           datapath=f'/data/dataaugmentationinmedicalfield/crossvali-add-muti-{i}/',
            batchnorm=0.1,
            dropout=False)
