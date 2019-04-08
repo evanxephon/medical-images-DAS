@@ -65,6 +65,37 @@ def heatmap(data):
         
         imshow(l1_layer_relevance_score,cmap=plt.cm.gray)
         
+def getcsvdata(data, classnum=2):
+    
+    RSoflabels = []
+    numoflabels = []
+    
+    for i in range(classnum):
+        RSoflabels[i] = np.array(list(0.0 for _ in range(136)))
+        numoflabels[i] = 0
+    
+    columnsoflobes = [1,5,6,8,14,15,29,32,33,3,11,13,16,17,18,19,23,26,27,31,4,10,12,20,7,21,24,28,30,2,9,22,25,34]
+    
+    for relevance_score in data:
+
+#     output_layer_relevance_score = relevance_score['score']['output-layer-relevance-score']
+#     l4_layer_relevance_score = relevance_score['score']['l4-layer-relevance-score']
+#     l3_layer_relevance_score = relevance_score['score']['l3-layer-relevance-score']
+#     l2_layer_relevance_score = relevance_score['score']['l2-layer-relevance-score']
+
+    l1_layer_relevance_score = relevance_score['score']['l1-layer-relevance-score']
+
+    for i in range(classnum):
+        if relevance_score['label'] == i:
+            RSoflabels[i] += l1_layer_relevance_score
+            numoflabels[i] += 1
+            
+    for i in range(classnum):
+        RSoflabels[i] /= numoflabels[i]
+        RSoflabels[i] = RSoflabels[i].reshape([4,34])
+        RSoflabels[i] = pd.DataFrame(RSoflabels[i], columns=columnsoflobes)
+        RSoflabels[i].to_csv(f'rs-{classnum}-class-label-{i}.csv',encoding='utf-8')#,index=False)
+    
 if __name__ == '__main__':
     with open('relevance_scores.pk','rb') as f:
         relevance_scores = pickle.load(f)
