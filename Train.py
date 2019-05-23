@@ -95,7 +95,7 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
     relprop()
     
     # restore the model 
-    torch.save(model.state_dict(), datapath)
+    torch.save(model.state_dict(), os.path.join(datapath, 'weight.pkl'))
          
 def train(epoch,l1regularization=None,l2regularization=None):
     
@@ -273,20 +273,20 @@ def relprop():
     
     
 if __name__ == '__main__':
-    for i in range(8):
+    for i in range(20):
         config(shape=[50,50,50,50],
            classnum=5,
            classnums=False,
            binaryafter=False,
-           learningrate=0.001,
+           learningrate=0.0001,
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=30,
-           samplenum=200000,
+           samplenum=100000,
            sampletype='down',
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath=f'/data/dataaugmentationinmedicalfield/crossvali-add-muti-{i}/',
+           datapath=f'/data/dataaugmentationinmedicalfield/data-vol-25-{i}/',
            batchnorm=0.1,
            dropout=False)
