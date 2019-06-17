@@ -5,6 +5,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
 if __name__ == '__main__':
+    
+    data = pd.read_csv('rawdata.csv')
+    
     data0 = data[data['label'] == 0]
     data1 = data[data['label'] == 1]
     data2 = data[data['label'] == 2]
