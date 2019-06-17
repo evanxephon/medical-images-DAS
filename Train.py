@@ -10,25 +10,25 @@ import pickle
 
 def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
     
-    # binary or muti classification set
+    # binary or multi classification set
 
     traindata = []
 
     if classnums:
 
-        testdata = 'testdata-muti.csv'
-        validatedata = 'validatedata-muti.csv'
+        testdata = 'testdata-multi.csv'
+        validatedata = 'validatedata-multi.csv'
 
         for i in classnums:
-            traindata.append(f'{i}-muti.csv')
+            traindata.append(f'{i}-multi.csv')
 
     elif classnum > 2:
 
-        testdata = 'testdata-muti.csv'
-        validatedata = 'validatedata-muti.csv'
+        testdata = 'testdata-multi.csv'
+        validatedata = 'validatedata-multi.csv'
 
         for i in range(classnum):
-            traindata.append(f'{i}-muti.csv')
+            traindata.append(f'{i}-multi.csv')
 
     elif classnum == 2:
 
