@@ -178,9 +178,9 @@ def generate_different_kernels_combinations_for_different_type(data,kernelsize=(
         dataset = dataset.append(augrows)    
     return dataset
                      
-# muti-threading
+# multi-threading
 class outputthread(threading.Thread):
-    def __init__(self,function,thetype,data,num=None,classnum='muti',kernelsize=None,strategy='replace'):
+    def __init__(self,function,thetype,data,num=None,classnum='multi',kernelsize=None,strategy='replace'):
         threading.Thread.__init__(self)
         self.function = function
         self.data = data
@@ -224,7 +224,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     else:
         dataset = [data0,data1,data2,data3,data4]
         testnum = testnum//5
-        classnum = 'muti'
+        classnum = 'multi'
         
     # cross validation
     
