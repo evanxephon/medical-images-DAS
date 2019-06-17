@@ -144,8 +144,8 @@ def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,cla
     traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,classnums=classnums,traindata=traindata)
 
     if binaryafter:
-        testdata = 'testdata-muti.csv'
-        validatedata = 'validatedata-muti.csv'
+        testdata = 'testdata-multi.csv'
+        validatedata = 'validatedata-multi.csv'
 
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
