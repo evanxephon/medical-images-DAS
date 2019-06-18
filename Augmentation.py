@@ -291,32 +291,31 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
             os.mkdir(savepath)
         os.chdir(savepath)
   	
-	traindata = data[0]
-	
-	for x in len(traindata):
-		# open a thread
-		if thread:
-		    if kernelsize:
-			thread = outputthread(function,x,traindata[x],num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
-		    else:
-			thread = outputthread(function,x,traindata[x],num,classnum=classnum,strategy=strategy)
-		    thread.start()
-		else:
-		    if num and kernelsize:
-			data = function(traindata[x],kernelsize[x],num,strategy=strategy)
-		    elif not num and not kernelsize:
-			data = function(traindata[x],strategy=strategy)
-		    elif not kernelsize and num:
-			data = function(traindata[x],num,strategy=strategy)
-		    elif kernelsize and not num:
-			data = function(traindata[x],kernelsize[x],strategy=strategy)
-		    data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
+        traindata = data[0]
+
+        for x in range(len(traindata)):
+        #open a thread
+            if thread:
+                if kernelsize:
+                    thread = outputthread(function,x,traindata[x],num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
+                else:
+                    thread = outputthread(function,x,traindata[x],num,classnum=classnum,strategy=strategy)
+                thread.start()
+            else:
+                if num and kernelsize:
+                    data = function(traindata[x],kernelsize[x],num,strategy=strategy)
+                elif not num and not kernelsize:
+                    data = function(traindata[x],strategy=strategy)
+                elif not kernelsize and num:
+                    data = function(traindata[x],num,strategy=strategy)
+                elif kernelsize and not num:
+                    data = function(traindata[x],kernelsize[x],strategy=strategy)
+                data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
 		
         traindata = pd.concat(data[0], axis=0)
         testdata = pd.concat(data[1], axis=0)
-	
-	testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
-	traindata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
+        testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+        traindata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
     config('rawdata2sort.csv',
