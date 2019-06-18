@@ -205,7 +205,7 @@ class outputthread(threading.Thread):
         print('onedatafinished')
         print(f'{start-end} seconds for type{self.type} augmentation')
         
-def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,crossvalidatesimple=1,crossvalidatekfold=1,thread=False,strategy='replace'):
+def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,savepath=False,cv_order=1,cv_shuffle=1,cv_fold=1,thread=False,strategy='replace'):
     
     rawdata = pd.read_csv('/data/dataaugmentationinmedicalfield/'+data)
     
@@ -216,7 +216,7 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     data4 = rawdata[rawdata['label'] == 4]
 
     if binary:
-        data1 = shuffle(data1.append([data2,data3,data4]))
+        data1 = data1.append([data2,data3,data4])
         data1['label'] = 1
         dataset = [data0,data1]
         testnum = testnum//2
@@ -226,81 +226,98 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         testnum = testnum//5
         classnum = 'multi'
         
-    # cross validation
+    # cross validation, three ways to do: 1.shuffle, 2.order, 3.fold
+    filedir = savepath + f'{max(i,j,k)}'
     
-    for i in range(crossvalidatesimple):
-        for j in range(crossvalidatekfold):
+    trainset = []
+    testset = []
+    
+    for x in range(len(dataset)):
+        start = 0
 
-            testdata = pd.DataFrame(columns=rawdata.columns)
-            validatedata = pd.DataFrame(columns=rawdata.columns)
+        if cv_shuffle != 1:
+            end = testnum
 
-            if crossvalidatesimple != 1:
-                for x in range(len(dataset)):
-                    dataset[x] = shuffle(dataset[x])
-                filedir = savepath + f'{i}'
-                testnumhead = testnum
-                testnumtail = 0 
-                                
-            if crossvalidatekfold != 1:
-                testnumhead = 505 // kfold // 2
-                testnumtail = 0
-                filedir = savepath + f'{j}'
-                
-            # choose the strategy generate num(optional) kernel size(optional)                        
-            for x in range(len(dataset)):
-                
-                datatrainhead = dataset[x].iloc[:-testnumhead,:]
-                
-                if crossvalidatekfold != 1 and j != 0:
-                    datatraintail = dataset[x].iloc[-testnumtail:,:]
-                else:
-                    datatraintail = pd.DataFrame()
-                datatrain = datatrainhead.append(datatraintail)
-                
-                if testnumtail != 0:
-                    datatest = dataset[x].iloc[-testnumhead:-testnumtail,:]
-                else:
-                    datatest = dataset[x].iloc[-testnumhead:,:]
+        elif cv_fold != 1:
+            interval = 505 // cv_fold // 2
+            end = interval
 
-                testdata = testdata.append(datatest)
-                validatedata = validatedata.append(datatrain)
-                
-                if crossvalidatekfold != 1:
-                    testnumhead += (505 // kfold // 2)
-                    testnumtail += (505 // kfold // 2)
+        elif cv_order != 1:
+            end = testnum
+            
+        traindata = []
+        testdata = []
+        
+        for i in range(cv_shuffle):
+            for j in range(cv_fold):
+                for k in range(cv_order):
 
-                # choose the data saving path
-                if not os.path.isdir(filedir):
-                    os.mkdir(filedir)
-                os.chdir(filedir)
-
-                # open a thread
-                if thread:
-                    if kernelsize:
-                        thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
+                    if cv_shuffle != 1:
+                        dataset[x] = shuffle(dataset[x])
+                            
+                    if start < end:
+                        datatrain = pd.concat([dataset[x].iloc[0:start,:], dataset[x].iloc[end:,:]], axis=0)
+                        datatest = dataset[x].iloc[start:end,:]
                     else:
-                        thread = outputthread(function,x,datatrain,num,classnum=classnum,strategy=strategy)
-                    thread.start()
-                else:
-                    if num and kernelsize:
-                        data = function(datatrain,kernelsize[x],num,strategy=strategy)
-                    elif not num and not kernelsize:
-                        data = function(datatrain,strategy=strategy)
-                    elif not kernelsize and num:
-                        data = function(datatrain,num,strategy=strategy)
-                    elif kernelsize and not num:
-                        data = function(datatrain,kernelsize[x],strategy=strategy)
-                    data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
+                        datatrain = dataset[x].iloc[end:start,:]
+                        datatest = pd.concat([dataset[x].iloc[0:end,:], dataset[x].iloc[start:,:]], axis=0)
 
-            # save the testdata
-            testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
-            validatedata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
+                    testdata.append(datatest)
+                    traindata.append(datatrain)
+
+                    if cv_fold != 1:
+                        end += interval
+                        start += interval
+
+                    if cv_order != 1:
+                        start = end
+                        end = (start + testnum)%len(dataset[x])
+                        
+                    # choose the data saving path
+                    if not os.path.isdir(filedir):
+                        os.mkdir(filedir)
+                    os.chdir(filedir)
+        
+        trainset.append(traindata)
+        testset.append(testset)
+    
+    # create the zip generator for the iteration
+    
+    if binary:
+        trainzip = zip(trainset[0], trainset[1])
+        testzip = zip(testset[0], testset[1])
+    else:
+        trainzip = zip(trainset[0], trainset[1], trainset[2], trainset[3], trainset[4])
+        testzip = zip(testset[0], testset[1], testset[2], testset[3], testset[4])
+     
+    for datatrain, datatest in zip(trainzip, testzip):
+        # open a thread
+        if thread:
+            if kernelsize:
+                thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
+            else:
+                thread = outputthread(function,x,datatrain,num,classnum=classnum,strategy=strategy)
+            thread.start()
+        else:
+            if num and kernelsize:
+                data = function(datatrain,kernelsize[x],num,strategy=strategy)
+            elif not num and not kernelsize:
+                data = function(datatrain,strategy=strategy)
+            elif not kernelsize and num:
+                data = function(datatrain,num,strategy=strategy)
+            elif kernelsize and not num:
+                data = function(datatrain,kernelsize[x],strategy=strategy)
+            data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
+
+        # save the testdata
+        testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+        traindata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
     config('rawdata2sort.csv',
             function=generate_different_kernels,
             num=False,
-            testnum=50,
+            testnum=20,
             #kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
             #            ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
@@ -309,8 +326,9 @@ if __name__ == '__main__':
             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
             savepath='/data/dataaugmentationinmedicalfield/crossvali-add-',
-            crossvalidatesimple=10,
-            crossvalidatekfold=1,
+            cv_order=20,
+            cv_shuffle=1,
+            cv_fold=1,
             thread=False,
             strategy='replace')
 
