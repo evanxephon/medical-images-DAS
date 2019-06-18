@@ -325,35 +325,10 @@ if __name__ == '__main__':
             #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
-            savepath='/data/dataaugmentationinmedicalfield/crossvali-add-',
+            savepath='/data/dataaugmentationinmedicalfield/cv-bin-',
             cv_order=20,
             cv_shuffle=1,
             cv_fold=1,
             thread=False,
             strategy='replace')
 
-    '''config('rawdata1sort.csv',
-           function=generate_different_kernels_combinations_for_different_type,
-           num=False,
-           testnum=100,
-           binary=False,
-           savepath='/data/dataaugmentationinmedicalfield/kernal_comb')'''
-    
-    # cross validation
-    '''for x in range(20):
-        dirname = 'crossvalidation-'+'batch-1-' + f'{x}'
-        config('rawdata1sort.csv',
-               function=generate_different_kernels,
-               num=False,
-               testnum=25,
-               kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
-                           ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                           ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                           ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                           ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
-               binary=False,
-               savepath='/data/dataaugmentationinmedicalfield/'+dirname,
-               crossvalidation=True,
-               thread=False,
-               strategy='replace'
-               )'''
