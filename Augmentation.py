@@ -272,12 +272,10 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
                         start = end
                         end = (start + testnum)%len(dataset[x])
                         
-        
         trainset.append(traindata)
         testset.append(testdata)
     
     # create the zip generator for the iteration
-    
     if binary:
         trainzip = zip(trainset[0], trainset[1])
         testzip = zip(testset[0], testset[1])
@@ -292,32 +290,33 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         if not os.path.isdir(savepath):
             os.mkdir(savepath)
         os.chdir(savepath)
-  
-        datatrain = pd.concat(data[0], axis=0)
-        datatest = pd.concat(data[1], axis=0)
-
+  	
+	traindata = data[0]
 	
-        # open a thread
-        if thread:
-            if kernelsize:
-                thread = outputthread(function,x,datatrain,num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
-            else:
-                thread = outputthread(function,x,datatrain,num,classnum=classnum,strategy=strategy)
-            thread.start()
-        else:
-            if num and kernelsize:
-                data = function(datatrain,kernelsize[x],num,strategy=strategy)
-            elif not num and not kernelsize:
-                data = function(datatrain,strategy=strategy)
-            elif not kernelsize and num:
-                data = function(datatrain,num,strategy=strategy)
-            elif kernelsize and not num:
-                data = function(datatrain,kernelsize[x],strategy=strategy)
-            data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
-
-        # save the testdata
-        testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
-        traindata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
+	for x in len(traindata):
+		# open a thread
+		if thread:
+		    if kernelsize:
+			thread = outputthread(function,x,traindata[x],num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
+		    else:
+			thread = outputthread(function,x,traindata[x],num,classnum=classnum,strategy=strategy)
+		    thread.start()
+		else:
+		    if num and kernelsize:
+			data = function(traindata[x],kernelsize[x],num,strategy=strategy)
+		    elif not num and not kernelsize:
+			data = function(traindata[x],strategy=strategy)
+		    elif not kernelsize and num:
+			data = function(traindata[x],num,strategy=strategy)
+		    elif kernelsize and not num:
+			data = function(traindata[x],kernelsize[x],strategy=strategy)
+		    data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
+		
+        traindata = pd.concat(data[0], axis=0)
+        testdata = pd.concat(data[1], axis=0)
+	
+	testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
+	traindata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
 if __name__ == '__main__':
     config('rawdata2sort.csv',
