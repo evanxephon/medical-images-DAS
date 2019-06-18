@@ -227,7 +227,6 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         classnum = 'multi'
         
     # cross validation, three ways to do: 1.shuffle, 2.order, 3.fold
-    filedir = savepath + f'{max(i,j,k)}'
     
     trainset = []
     testset = []
@@ -273,13 +272,9 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
                         start = end
                         end = (start + testnum)%len(dataset[x])
                         
-                    # choose the data saving path
-                    if not os.path.isdir(filedir):
-                        os.mkdir(filedir)
-                    os.chdir(filedir)
         
         trainset.append(traindata)
-        testset.append(testset)
+        testset.append(testdata)
     
     # create the zip generator for the iteration
     
@@ -290,7 +285,18 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         trainzip = zip(trainset[0], trainset[1], trainset[2], trainset[3], trainset[4])
         testzip = zip(testset[0], testset[1], testset[2], testset[3], testset[4])
      
-    for datatrain, datatest in zip(trainzip, testzip):
+    for i, data in enumerate(zip(trainzip, testzip)):
+        
+        savepath = savepath + f'{i}'
+     
+        if not os.path.isdir(savepath):
+            os.mkdir(savepath)
+        os.chdir(savepath)
+  
+        datatrain = pd.concat(data[0], axis=0)
+        datatest = pd.concat(data[1], axis=0)
+
+	
         # open a thread
         if thread:
             if kernelsize:
