@@ -286,12 +286,12 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     batch = 0
     for traindata, testdata in zip(trainzip, testzip):
         
-        savepath = savepath + f'{batch}'
+        savedir = savepath + f'{batch}'
         batch += 1
         
-        if not os.path.isdir(savepath):
-            os.mkdir(savepath)
-        os.chdir(savepath)
+        if not os.path.isdir(savedir):
+            os.mkdir(savedir)
+        os.chdir(savedir)
 
         for x in range(len(traindata)):
         #open a thread
