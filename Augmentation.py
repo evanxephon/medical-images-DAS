@@ -282,16 +282,16 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     else:
         trainzip = zip(trainset[0], trainset[1], trainset[2], trainset[3], trainset[4])
         testzip = zip(testset[0], testset[1], testset[2], testset[3], testset[4])
-     
-    for i, data in enumerate(zip(trainzip, testzip)):
+    
+    batch = 0
+    for traindata, testdata in zip(trainzip, testzip):
         
-        savepath = savepath + f'{i}'
-     
+        savepath = savepath + f'{batch}'
+        batch += 1
+        
         if not os.path.isdir(savepath):
             os.mkdir(savepath)
         os.chdir(savepath)
-  	
-        traindata = data[0]
 
         for x in range(len(traindata)):
         #open a thread
@@ -311,9 +311,9 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
                 elif kernelsize and not num:
                     data = function(traindata[x],kernelsize[x],strategy=strategy)
                 data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
-		
-        traindata = pd.concat(data[0], axis=0)
-        testdata = pd.concat(data[1], axis=0)
+                
+        traindata = pd.concat(traindata, axis=0)
+        testdata = pd.concat(testdata, axis=0)
         testdata.to_csv(f'testdata-{classnum}.csv',encoding=None,index=False)
         traindata.to_csv(f'validatedata-{classnum}.csv',encoding=None,index=False)
     
@@ -321,15 +321,15 @@ if __name__ == '__main__':
     config('rawdata2sort.csv',
             function=generate_different_kernels,
             num=False,
-            testnum=20,
-            #kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
-            #            ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
-            #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
-            #            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
-            #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
-            kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
-            binary=True,
-            savepath='/data/dataaugmentationinmedicalfield/cv-bin-',
+            testnum=25,
+            kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+                        ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                        ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                        ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
+                        ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
+#             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
+            binary=False,
+            savepath='/data/dataaugmentationinmedicalfield/cv-multi-',
             cv_order=20,
             cv_shuffle=1,
             cv_fold=1,
