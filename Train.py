@@ -36,7 +36,7 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
         for i in range(classnum):
             traindata.append(f'{i}-binary.csv')
     
-    # print the configuaration
+    # print the configuaration 
     print(f'latent-layer-shape:{shape}')
     print(f'the-num-of-classes:{classnum}')
     print(f'learningrate:{learningrate}')
@@ -74,16 +74,17 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
                                                                                    binaryafter=binaryafter,datapath=datapath, 
                                                                                    rawdatatrain=rawdatatrain)
     accuracy = []
+    valiacc = []
  
     for i in range(epoch):
         train(model, train_loader, optimizer, i,l1regularization=l1regularization,l2regularization=l2regularization,
               cvmodeoutput=cvmodeoutput)
-        validate(model, validate_loader, cvmodeoutput=cvmodeoutput)
-        accuracy.append(test(model, testloader, classnum, cvmodeoutput=cvmodeoutput).cpu().numpy())
+        valiacc.append(validate(model, validate_loader, cvmodeoutput=cvmodeoutput).cpu().numpy())
+        accuracy.append(test(model, test_loader, classnum, cvmodeoutput=cvmodeoutput).cpu().numpy())
     
-    accuracy = pd.Series(accuracy)
-    print(accuracy)
-    #print(f'median:{accuracy.median} max:{accuracy.max()}')
+    acc = pd.DataFrame([accuracy, valiacc])
+
+    print(acc)
     
     # relevance score computation
     relprop(model, relprop_loader)

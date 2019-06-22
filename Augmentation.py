@@ -322,19 +322,19 @@ if __name__ == '__main__':
             function=generate_different_kernels_withnum,
             #num=[16, 18],# for 50k binary data
             #num=[81, 90],# for 250k binary data
-            num=[163, 181],# for 500k bin data
-            #num=[10, 43, 50, 52, 54],
+            #num=[163, 181],# for 500k bin data
+            num=[10, 43, 50, 52, 54],
             #num=[2, 12, 10, 10, 8],
-            testnum=20,
+            testnum=25,
             #kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
             #            ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
             #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
-            #kernelsize = list(((2,9),(2,11),(2,4),(2,5),(2,4),(2,1)) for x in range(5)),
-            kernelsize = list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
+            kernelsize = list(((2,9),(2,11),(2,4),(2,5),(2,4),(2,1)) for x in range(5)),
+            #kernelsize = list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
             binary=True,
-            savepath='/data/dataaugmentationinmedicalfield/cv-bin-500k-',
+            savepath='/data/dataaugmentationinmedicalfield/cv-multi-500k-p-',
             cv_order=20,
             cv_shuffle=1,
             cv_fold=1,
