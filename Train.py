@@ -35,7 +35,7 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
 
         for i in range(classnum):
             traindata.append(f'{i}-binary.csv')
-    if cvnum == 1:
+    if cvnum == 0:
            # print the configuaration 
                print(f'latent-layer-shape:{shape}')
                print(f'the-num-of-classes:{classnum}')
