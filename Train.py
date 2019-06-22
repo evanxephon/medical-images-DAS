@@ -10,7 +10,7 @@ import pickle
 
 def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,
            batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,
-           l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False,rawdatatrain=False,cvmodeoutput=False):
+           l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False,rawdatatrain=False,cvmodeoutput=False,cvnum=0):
     
     # binary or multi classification set
     traindata = []
@@ -35,25 +35,25 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
 
         for i in range(classnum):
             traindata.append(f'{i}-binary.csv')
-    
-    # print the configuaration 
-    print(f'latent-layer-shape:{shape}')
-    print(f'the-num-of-classes:{classnum}')
-    print(f'learningrate:{learningrate}')
-    #print(f'learningrateschema:{learningrateschema}')
-    print(f'batchsize:{batchsize}')
-    print(f'testdata:{testdata}')
-    print(f'validatedata:{validatedata}')
-    print(f'traindata:{traindata}')
-    print(f'epoch:{epoch}')
-    print(f'samplenum:{samplenum}')
-    print(f'sampletype:{sampletype}')
-    print(f'l1regularizationrate:{l1regularization}')
-    print(f'l2regularizationrate:{l2regularization}')
-    print(f'batchnormmomentom:{batchnorm}')
-    print(f'dropoutrate:{dropout}')
-    print(f'cnn:{cnn}')
-    print(f'path:{datapath}')
+    if cvnum == 1:
+           # print the configuaration 
+               print(f'latent-layer-shape:{shape}')
+               print(f'the-num-of-classes:{classnum}')
+               print(f'learningrate:{learningrate}')
+               #print(f'learningrateschema:{learningrateschema}')
+               print(f'batchsize:{batchsize}')
+               print(f'testdata:{testdata}')
+               print(f'validatedata:{validatedata}')
+               print(f'traindata:{traindata}')
+               print(f'epoch:{epoch}')
+               print(f'samplenum:{samplenum}')
+               print(f'sampletype:{sampletype}')
+               print(f'l1regularizationrate:{l1regularization}')
+               print(f'l2regularizationrate:{l2regularization}')
+               print(f'batchnormmomentom:{batchnorm}')
+               print(f'dropoutrate:{dropout}')
+               print(f'cnn:{cnn}')
+               print(f'path:{datapath}')
        
     if datapath:
         os.chdir(datapath)
@@ -286,4 +286,5 @@ if __name__ == '__main__':
            batchnorm=0.1,
            dropout=False,
            rawdatatrain=False,
-           cvmodeoutput=True,)
+           cvmodeoutput=True,
+           cvnum=i,)
