@@ -107,11 +107,10 @@ def config(batchsize,traindata,validatedata,testdata,classnum,classnums,binaryaf
     if classnums:
         for i in range(5):
             if i not in classnums:
-
                 validatedata = validatedata.loc[validatedata['label'] != i]
                 testdata = testdata.loc[testdata['label'] != i]
-        for i in range(len(classnums)):
 
+        for i in range(len(classnum)):
             validatedata.loc[validatedata['label'] == classnums[i], 'label'] = i
             testdata.loc[testdata['label'] == classnums[i], 'label'] = i
   
@@ -136,18 +135,22 @@ def config(batchsize,traindata,validatedata,testdata,classnum,classnums,binaryaf
 
     return train_loader,validate_loader,test_loader,relprop_loader
 
-def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter=False,datapath=False):
+def getloader(samplenum,sampletype,batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter=False,datapath=False,rawdatatrain=False):
 
     if datapath:
         os.chdir(datapath) 
-   
-    traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,classnums=classnums,traindata=traindata)
-
     if binaryafter:
         testdata = 'testdata-multi.csv'
         validatedata = 'validatedata-multi.csv'
-
     testdata = pd.read_csv(testdata)
     validatedata = pd.read_csv(validatedata)
+
+    if rawdatatrain:
+        traindata = pd.DataFrame()
+        if samplenum:
+	    for x in range(classnum):
+                traindata = traindata.append(validatedata[validatedata['label'] == x])
+    else:
+        traindata = maketraindata(samplenum,sampletype,binaryafter=binaryafter,classnums=classnums,traindata=traindata)
 
     return config(batchsize,traindata,validatedata,testdata,classnum,classnums,binaryafter=binaryafter,onehot=False)

@@ -8,7 +8,7 @@ import Dataset
 import os
 import pickle
 
-def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False):
+def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False,rawdatatrain=False):
     
     # binary or multi classification set
 
@@ -78,7 +78,7 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
     global validate_loader
     global relprop_loader
 
-    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum=samplenum,sampletype=sampletype,batchsize=batchsize,traindata=traindata,validatedata=validatedata,testdata=testdata,classnum=classnum,classnums=classnums,binaryafter=binaryafter,datapath=datapath)
+    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum=samplenum,sampletype=sampletype,batchsize=batchsize,traindata=traindata,validatedata=validatedata,testdata=testdata,classnum=classnum,classnums=classnums,binaryafter=binaryafter,datapath=datapath, rawdatatrain=rawdatatrain)
     
     accuracy = []
  
@@ -208,7 +208,7 @@ def test(classnum=5):
         acc_mask = pre_mask*tar_mask
         acc_num += acc_mask.sum(0)
 
-    '''
+    
     recall = acc_num/target_num
     precision = acc_num/predict_num
     F1 = 2*recall*precision/(recall+precision)
@@ -231,12 +231,13 @@ def test(classnum=5):
          100. * correct / len(test_loader.dataset)))''' 
    
     # record the correct predict type
-    '''pred = pred.cpu().numpy()
-    pred = pd.DateFrame(pred)
-    target.data.cpu().numpy()
-    target = pd.DataFrame(target)
-    correctpred = pred.loc[pred == target]
-    print(correctpred.count())'''
+    if not cvmodeoutput:
+        pred = pred.cpu().numpy()
+        pred = pd.DateFrame(pred)
+        target.data.cpu().numpy()
+        target = pd.DataFrame(target)
+        correctpred = pred.loc[pred == target]
+        print(correctpred.count())
 
     return 100. * correct / len(test_loader.dataset)
 
@@ -289,4 +290,6 @@ if __name__ == '__main__':
            cnn = False,#[[1,1,2,1,0]],
            datapath=f'/data/dataaugmentationinmedicalfield/cv-multi-500k-{i}/',
            batchnorm=0.1,
-           dropout=False)
+           dropout=False,
+           rawdatatrain=False,
+           cvmodeoutput=True,)
