@@ -8,22 +8,21 @@ import Dataset
 import os
 import pickle
 
-def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False,rawdatatrain=False):
+def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,learningrate=0.01,learningrateschema=optim.SGD,
+           batchsize=64,testdata='',validatedata='',traindata=(),epoch=100,samplenum=False,sampletype=False,l1regularization=None,
+           l2regularization=None,cnn=False,datapath=False,batchnorm=False,dropout=False,rawdatatrain=False,cvmodeoutput=False):
     
     # binary or multi classification set
-
     traindata = []
-
+    
+    # specify the chosen classes
     if classnums:
-
         testdata = 'testdata-multi.csv'
         validatedata = 'validatedata-multi.csv'
-
         for i in classnums:
             traindata.append(f'{i}-multi.csv')
-
+    # using all the classes
     elif classnum > 2:
-
         testdata = 'testdata-multi.csv'
         validatedata = 'validatedata-multi.csv'
 
@@ -31,7 +30,6 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
             traindata.append(f'{i}-multi.csv')
 
     elif classnum == 2:
-
         testdata = 'testdata-binary.csv'
         validatedata = 'validatedata-binary.csv'
 
@@ -57,9 +55,6 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
     print(f'cnn:{cnn}')
     print(f'path:{datapath}')
        
-
-    global model
-    
     if datapath:
         os.chdir(datapath)
     
@@ -69,38 +64,37 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
     model._initialize_weights()
     
     # SGD plus momentum
-    global optimizer 
     optimizer = learningrateschema(model.parameters(), lr=learningrate, momentum=0.2)#, weight_decay=1e-5)
 
     # get the dataloader
-    global train_loader
-    global test_loader
-    global validate_loader
-    global relprop_loader
-
-    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum=samplenum,sampletype=sampletype,batchsize=batchsize,traindata=traindata,validatedata=validatedata,testdata=testdata,classnum=classnum,classnums=classnums,binaryafter=binaryafter,datapath=datapath, rawdatatrain=rawdatatrain)
-    
+    train_loader, validate_loader, test_loader, relprop_loader = Dataset.getloader(samplenum=samplenum,sampletype=sampletype,
+                                                                                   batchsize=batchsize,traindata=traindata,
+                                                                                   validatedata=validatedata,testdata=testdata,
+                                                                                   classnum=classnum,classnums=classnums,
+                                                                                   binaryafter=binaryafter,datapath=datapath, 
+                                                                                   rawdatatrain=rawdatatrain)
     accuracy = []
  
     for i in range(epoch):
-        train(i,l1regularization=l1regularization,l2regularization=l2regularization)
-        validate()
-        accuracy.append(test(classnum).cpu().numpy())
+        train(model, train_loader, optimizer, i,l1regularization=l1regularization,l2regularization=l2regularization,
+              cvmodeoutput=cvmodeoutput)
+        validate(model, validate_loader, cvmodeoutput=cvmodeoutput)
+        accuracy.append(test(model, testloader, classnum, cvmodeoutput=cvmodeoutput).cpu().numpy())
     
-    accuracy = pd.DataFrame(accuracy).T
+    accuracy = pd.Series(accuracy)
     print(accuracy)
-    print(f'median:{accuracy.median} max:{accuracy.max()}')
+    #print(f'median:{accuracy.median} max:{accuracy.max()}')
     
     # relevance score computation
-    relprop()
+    relprop(model, relprop_loader)
     
     # restore the model 
-    torch.save(model.state_dict(), os.path.join(datapath, 'weight.pkl'))
+    torch.save(model.state_dict(), os.path.join(datapath, 'weights.pkl'))
          
-def train(epoch,l1regularization=None,l2regularization=None):
+def train(model, train_loader, optimizer, epoch, l1regularization=None, l2regularization=None, cvmodeoutput=False):
     
     model.train()
-    
+  
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = Variable(data), Variable(target)
         data = data.cuda()
@@ -137,15 +131,15 @@ def train(epoch,l1regularization=None,l2regularization=None):
 
         # update weights 
         optimizer.step()
-'''
-        if batch_idx % 1000 == 0:
-            # the output is like, Train Epoch: 1 [0/60000 (0%)]   Loss: 2.292192
-            #             Train Epoch: 1 [12800/60000 (21%)]  Loss: 2.289466
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))'''
+        if not cvmodeoutput:
+            if batch_idx % 1000 == 0:
+                # the output is like, Train Epoch: 1 [0/60000 (0%)]   Loss: 2.292192
+                #             Train Epoch: 1 [12800/60000 (21%)]  Loss: 2.289466
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                    epoch, batch_idx * len(data), len(train_loader.dataset),
+                    100. * batch_idx / len(train_loader), loss.item()))
 
-def validate():
+def validate(model, validate_loader, cvmodeoutput=False):
     
     model.eval()
     
@@ -162,14 +156,15 @@ def validate():
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-'''
-    validate_loss /= len(validate_loader.dataset)
-    # the output is like0m~ZValidate set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
-    print('\nValidate set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        validate_loss, correct, len(validate_loader.dataset),
-        100. * correct / len(validate_loader.dataset)))'''
+    if not cvmodeoutput:
+        validate_loss /= len(validate_loader.dataset)
+        # the output is like0m~ZValidate set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
+        print('\nValidate set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+            validate_loss, correct, len(validate_loader.dataset),
+            100. * correct / len(validate_loader.dataset)))
+    return  100. * correct / len(validate_loader.dataset)
 
-def test(classnum=5):
+def test(model, test_loader, classnum=5, cvmodeoutput=False):
     
     model.eval()
     
@@ -182,7 +177,6 @@ def test(classnum=5):
     acc_num = torch.zeros((1,classnum))
 
     for data, target in test_loader:
-        
         with torch.no_grad():
             data, target = Variable(data), Variable(target)
         
@@ -208,30 +202,29 @@ def test(classnum=5):
         acc_mask = pre_mask*tar_mask
         acc_num += acc_mask.sum(0)
 
-    
-    recall = acc_num/target_num
-    precision = acc_num/predict_num
-    F1 = 2*recall*precision/(recall+precision)
-    accuracy = acc_num.sum(1)/target_num.sum(1)
-
-    recall = (recall.cpu().numpy()[0]*100).round(3)
-    precision = (precision.cpu().numpy()[0]*100).round(3)
-    F1 = (F1.cpu().numpy()[0]*100).round(3)
-    accuracy = (accuracy.cpu().numpy()[0]*100).round(3)
-
-    print('recall'," ".join('%s' % id for id in recall))
-    print('precision'," ".join('%s' % id for id in precision))
-    print('F1'," ".join('%s' % id for id in F1))
-    print('accuracy',accuracy)
-    
-    test_loss /= len(test_loader.dataset)
-    # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-         test_loss, correct, len(test_loader.dataset),
-         100. * correct / len(test_loader.dataset)))''' 
-   
-    # record the correct predict type
     if not cvmodeoutput:
+        recall = acc_num/target_num
+        precision = acc_num/predict_num
+        F1 = 2*recall*precision/(recall+precision)
+        accuracy = acc_num.sum(1)/target_num.sum(1)
+
+        recall = (recall.cpu().numpy()[0]*100).round(3)
+        precision = (precision.cpu().numpy()[0]*100).round(3)
+        F1 = (F1.cpu().numpy()[0]*100).round(3)
+        accuracy = (accuracy.cpu().numpy()[0]*100).round(3)
+
+        print('recall'," ".join('%s' % id for id in recall))
+        print('precision'," ".join('%s' % id for id in precision))
+        print('F1'," ".join('%s' % id for id in F1))
+        print('accuracy',accuracy)
+
+        test_loss /= len(test_loader.dataset)
+        # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
+        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+             test_loss, correct, len(test_loader.dataset),
+             100. * correct / len(test_loader.dataset))) 
+
+        # record the correct predict type
         pred = pred.cpu().numpy()
         pred = pd.DateFrame(pred)
         target.data.cpu().numpy()
@@ -241,7 +234,7 @@ def test(classnum=5):
 
     return 100. * correct / len(test_loader.dataset)
 
-def relprop():
+def relprop(model, relprop_loader):
 
     model.eval()
 
