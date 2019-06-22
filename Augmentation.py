@@ -106,14 +106,14 @@ def generate_different_kernels(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2
 def generate_different_kernels_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0,strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     sampleset = list(range(len(data)))
-    set1 = random.sample(sampleset,usedrownum)
-    for i in set1:
+
+    for i in range(len(data)):
         
         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
         augrows = pd.DataFrame(columns=data.columns)
-        set2 = random.sample(sampleset,usedrownum)
+        chosenset = random.sample(sampleset,usedrownum)
         
-        for j in set2:
+        for j in chosenset:
             for x in range(len(district)):
                 horizontalsize = district[x] - kernelsize[x][1] + 1
                 verticalsize = 4 - kernelsize[x][0] + 1
@@ -297,17 +297,17 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
         #open a thread
             if thread:
                 if kernelsize:
-                    thread = outputthread(function,x,traindata[x],num,classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
+                    thread = outputthread(function,x,traindata[x],num[x],classnum=classnum,kernelsize=kernelsize[x],strategy=strategy)
                 else:
-                    thread = outputthread(function,x,traindata[x],num,classnum=classnum,strategy=strategy)
+                    thread = outputthread(function,x,traindata[x],num[x],classnum=classnum,strategy=strategy)
                 thread.start()
             else:
                 if num and kernelsize:
-                    data = function(traindata[x],kernelsize[x],num,strategy=strategy)
+                    data = function(traindata[x],kernelsize[x],usedrownum=num[x],strategy=strategy)
                 elif not num and not kernelsize:
                     data = function(traindata[x],strategy=strategy)
                 elif not kernelsize and num:
-                    data = function(traindata[x],num,strategy=strategy)
+                    data = function(traindata[x],usedrownum=num[x],strategy=strategy)
                 elif kernelsize and not num:
                     data = function(traindata[x],kernelsize[x],strategy=strategy)
                 data.to_csv(f'{x}-{classnum}.csv',encoding=None,index=False)
@@ -319,17 +319,22 @@ def config(data,function,num=False,testnum=100,kernelsize=False,binary=False,sav
     
 if __name__ == '__main__':
     config('rawdata2sort.csv',
-            function=generate_different_kernels,
-            num=False,
-            testnum=25,
-            kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
-                        ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                        ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                        ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
-                        ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
-#             kernelsize =list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
-            binary=False,
-            savepath='/data/dataaugmentationinmedicalfield/cv-multi-',
+            function=generate_different_kernels_withnum,
+            #num=[16, 18],# for 50k binary data
+            #num=[81, 90],# for 250k binary data
+            num=[163, 181],# for 500k bin data
+            #num=[10, 43, 50, 52, 54],
+            #num=[2, 12, 10, 10, 8],
+            testnum=20,
+            #kernelsize=(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)),
+            #            ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1)),
+            #            ((1,4),(1,1),(1,1),(1,1),(1,1),(1,1)),
+            #            ((1,5),(1,1),(1,1),(1,1),(1,1),(1,1)),
+            #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
+            #kernelsize = list(((2,9),(2,11),(2,4),(2,5),(2,4),(2,1)) for x in range(5)),
+            kernelsize = list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
+            binary=True,
+            savepath='/data/dataaugmentationinmedicalfield/cv-bin-500k-',
             cv_order=20,
             cv_shuffle=1,
             cv_fold=1,

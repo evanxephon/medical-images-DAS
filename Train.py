@@ -137,13 +137,13 @@ def train(epoch,l1regularization=None,l2regularization=None):
 
         # update weights 
         optimizer.step()
-
+'''
         if batch_idx % 1000 == 0:
             # the output is like, Train Epoch: 1 [0/60000 (0%)]   Loss: 2.292192
             #             Train Epoch: 1 [12800/60000 (21%)]  Loss: 2.289466
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))
+                100. * batch_idx / len(train_loader), loss.item()))'''
 
 def validate():
     
@@ -162,12 +162,12 @@ def validate():
         # max means the prediction
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
+'''
     validate_loss /= len(validate_loader.dataset)
     # the output is like0m~ZValidate set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nValidate set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validate_loss, correct, len(validate_loader.dataset),
-        100. * correct / len(validate_loader.dataset)))
+        100. * correct / len(validate_loader.dataset)))'''
 
 def test(classnum=5):
     
@@ -208,7 +208,7 @@ def test(classnum=5):
         acc_mask = pre_mask*tar_mask
         acc_num += acc_mask.sum(0)
 
-    
+    '''
     recall = acc_num/target_num
     precision = acc_num/predict_num
     F1 = 2*recall*precision/(recall+precision)
@@ -228,7 +228,7 @@ def test(classnum=5):
     # the output is like Test set: Average loss: 0.0163, Accuracy: 6698/10000 (67%)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
          test_loss, correct, len(test_loader.dataset),
-         100. * correct / len(test_loader.dataset))) 
+         100. * correct / len(test_loader.dataset)))''' 
    
     # record the correct predict type
     '''pred = pred.cpu().numpy()
@@ -275,18 +275,18 @@ def relprop():
 if __name__ == '__main__':
     for i in range(20):
         config(shape=[50,50,50,50],
-           classnum=5,
+           classnum=2,
            classnums=False,
            binaryafter=False,
            learningrate=0.0001,
            learningrateschema=optim.SGD,
            batchsize=128,
            epoch=30,
-           samplenum=100000,
-           sampletype='down',
+           samplenum=False,
+           sampletype=False,
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath=f'/data/dataaugmentationinmedicalfield/data-vol-25-{i}/',
+           datapath=f'/data/dataaugmentationinmedicalfield/cv-multi-500k-{i}/',
            batchnorm=0.1,
            dropout=False)
