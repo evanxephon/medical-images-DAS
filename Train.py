@@ -82,15 +82,27 @@ def config(shape=[100,100,100],classnum=2,classnums=False,binaryafter=False,lear
         valiacc.append(validate(model, validate_loader, cvmodeoutput=cvmodeoutput).cpu().numpy())
         accuracy.append(test(model, test_loader, classnum, cvmodeoutput=cvmodeoutput).cpu().numpy())
     
-    acc = pd.DataFrame([accuracy, valiacc])
+    acc = pd.DataFrame([accuracy, valiacc]).T
 
     print(acc)
+
+    # chose the early stop point
+
+    earlystopepoch = acc[acc[1] == acc.max()[1]]
+    
+    maxresult = pd.DataFrame(acc.max()).T
+   
+    maxresult = maxresult.iloc[:,0]
+ 
+    print(earlystopepoch)
     
     # relevance score computation
     relprop(model, relprop_loader)
     
-    # restore the model 
+    # restore the model
     torch.save(model.state_dict(), os.path.join(datapath, 'weights.pkl'))
+    
+    return earlystopepoch, maxresult
          
 def train(model, train_loader, optimizer, epoch, l1regularization=None, l2regularization=None, cvmodeoutput=False):
     
@@ -268,23 +280,32 @@ def relprop(model, relprop_loader):
     
     
 if __name__ == '__main__':
+
+    thewholeacc = pd.DataFrame()
+    maxresults = pd.DataFrame()
     for i in range(20):
-        config(shape=[50,50,50,50],
-           classnum=2,
+        theacc,maxresult = config(shape=[50,50,50,50],
+           classnum=5,
            classnums=False,
            binaryafter=False,
-           learningrate=0.0001,
+           learningrate=0.001,
            learningrateschema=optim.SGD,
-           batchsize=128,
-           epoch=30,
+           batchsize=64,
+           epoch=50,
            samplenum=False,
            sampletype=False,
            l1regularization=False,
            l2regularization=False,
            cnn = False,#[[1,1,2,1,0]],
-           datapath=f'/data/dataaugmentationinmedicalfield/cv-multi-500k-{i}/',
+           datapath=f'/data/dataaugmentationinmedicalfield/cv-multi-{i}/',
            batchnorm=0.1,
            dropout=False,
            rawdatatrain=False,
            cvmodeoutput=True,
            cvnum=i,)
+        thewholeacc = thewholeacc.append(theacc)
+        maxresults = maxresults.append(maxresult)
+    print(thewholeacc)
+    print(thewholeacc.mean())
+    print(maxresults)
+    print(maxresults.mean())

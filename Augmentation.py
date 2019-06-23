@@ -333,7 +333,7 @@ if __name__ == '__main__':
             #            ((1,8),(2,6),(2,1),(2,1),(2,1),(2,1))),
             kernelsize = list(((2,9),(2,11),(2,4),(2,5),(2,4),(2,1)) for x in range(5)),
             #kernelsize = list(((4,9),(4,11),(4,4),(4,5),(4,4),(4,1)) for x in range(2)),
-            binary=True,
+            binary=False,
             savepath='/data/dataaugmentationinmedicalfield/cv-multi-500k-p-',
             cv_order=20,
             cv_shuffle=1,
