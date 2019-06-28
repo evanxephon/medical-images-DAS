@@ -106,15 +106,13 @@ def generate_different_kernels(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2
 def generate_different_kernels_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),(2,2),(2,1)),district=(9,11,4,5,4,1),usedrownum=0,strategy='replace'):
     dataset = pd.DataFrame(columns=data.columns)
     sampleset = list(range(len(data)))
-
-    for i in range(len(data)):
-        
-        thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+    for x in range(len(district)):
         augrows = pd.DataFrame(columns=data.columns)
-        chosenset = random.sample(sampleset,usedrownum)
-        
-        for j in chosenset:
-            for x in range(len(district)):
+        for i in range(len(data)):
+            chosenset = random.sample(sampleset,usedrownum)
+            thechosenrow = pd.DataFrame(data.iloc[i,:]).T
+            for j in chosenset:
+
                 horizontalsize = district[x] - kernelsize[x][1] + 1
                 verticalsize = 4 - kernelsize[x][0] + 1
                 for k in range(horizontalsize):
@@ -122,15 +120,15 @@ def generate_different_kernels_withnum(data,kernelsize=((2,4),(2,5),(2,2),(2,2),
                         for m in range(kernelsize[x][1]):
                             a = (sum(district[:x])+m+k)*4 + l
                             b = (sum(district[:x])+m+k)*4 + l + kernelsize[x][0]
-                            
+
                             if strategy == 'replace':
                                 thechosenrow.iloc[:, a:b] = data.iloc[j, a:b].values
                             elif strategy == 'add':
                                 thechosenrow.iloc[:, a:b] += data.iloc[j, a:b].values
-                                
+
                         augrows = augrows.append(thechosenrow)
                         thechosenrow = pd.DataFrame(data.iloc[i,:]).T
-                        
+
         dataset = dataset.append(augrows)
     return dataset
 
